@@ -104,6 +104,14 @@ Add to your `CLAUDE.md`:
 | task.yaml provided | run-task | Auto |
 ```
 
+## Design Philosophy
+
+1. **Correctness must not depend on any single entity** → Cross-verification (verify)
+2. **Correctness has a shelf life** → Temporal audit (constraint-driven-development)
+3. **Make violations difficult, don't rely on memory** → Machine-enforced gates (verify)
+4. **Reduce artifacts that need syncing** → Test = spec = documentation (constraint-driven-development)
+5. **Split by intent, not by layer** → Intent-verification pairs (writing-plans)
+
 ## License
 
 MIT

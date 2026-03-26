@@ -24,6 +24,8 @@ git -C .claude/skills pull
 | [constraint-driven-development](constraint-driven-development/SKILL.md) | RED→GREEN→Why workflow for business logic | Adding features, fixing business bugs |
 | [writing-plans](writing-plans/SKILL.md) | Intent-verification task decomposition | Before complex implementations |
 | [run-task](run-task/SKILL.md) | Semi-autonomous task execution from YAML | Delegating tasks to agents |
+| [jimeng-generator](jimeng-generator/SKILL.md) | Generate images via 即梦AI | "生成图片", "画一张", "做个封面" |
+| [xiaohongshu-publisher](xiaohongshu-publisher/SKILL.md) | Publish notes to 小红书 | "发小红书", "发个笔记" |
 
 ## CLAUDE.md Configuration
 
@@ -105,6 +107,8 @@ Add to your `CLAUDE.md`:
 ```
 
 ## Design Philosophy
+
+See [Engineering Philosophy](engineering-philosophy.md) for the full first-principles framework. Core principles:
 
 1. **Correctness must not depend on any single entity** → Cross-verification (verify)
 2. **Correctness has a shelf life** → Temporal audit (constraint-driven-development)

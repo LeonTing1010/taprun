@@ -10,7 +10,6 @@ Universal, project-agnostic skills for [Claude Code](https://claude.ai/claude-co
 | [constraint-driven-development](constraint-driven-development/SKILL.md) | RED→GREEN→Why workflow for business logic | Adding features, fixing business bugs |
 | [writing-plans](writing-plans/SKILL.md) | Intent-verification task decomposition | Before complex implementations |
 | [run-task](run-task/SKILL.md) | Semi-autonomous task execution from YAML | Delegating tasks to agents |
-| [appstore-review](appstore-review/SKILL.md) | App Store Review Guidelines compliance audit | Before iOS/macOS app submission |
 
 ## Installation
 
@@ -110,7 +109,6 @@ Configure automatic skill invocation by adding a router to your Claude Code sett
 | "new feature" / "business bug" | constraint-driven-development | Auto |
 | "write a plan" / complex task | writing-plans | Auto |
 | task.yaml provided | run-task | Auto |
-| "app store" / "submission check" | appstore-review | Auto |
 ```
 
 ## Design Philosophy

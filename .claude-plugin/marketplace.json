@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "taprun",
+  "description": "Leo's private engineering methodology toolkit — verification gates, constraint-driven development, engineering philosophy, planning, task execution, and demand archaeology.",
+  "owner": {
+    "name": "Leo"
+  },
+  "plugins": [
+    {
+      "name": "taprun",
+      "description": "Engineering methodology skills derived from first principles: verify (deterministic verification gates), constraint-driven-development (RED→GREEN→Why), engineering-philosophy (12-fact framework for architecture and product tradeoffs), writing-plans (intent-verification decomposition), run-task (semi-autonomous task execution), demand-archaeologist (evidence-based demand discovery).",
+      "source": "./plugins/taprun",
+      "category": "development",
+      "author": {
+        "name": "Leo"
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "run",
+  "name": "tap",
   "description": "Leo's private marketplace for the taprun plugin — engineering methodology skills derived from first principles.",
   "owner": {
     "name": "Leo"

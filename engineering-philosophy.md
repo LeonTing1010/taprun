@@ -586,13 +586,105 @@ New: "Does this constraint serve the value delta?" → Binary answer
 
 ---
 
-## 10. System Boundaries
+## 10. Value Discovery
+
+Sections 1–9 assume you know what to build. This section addresses the prior question: **how to discover what's worth building next.**
+
+### The paradox of requirements
+
+← D2 (not all rules are known) + T1 (external world changes)
+
+High-value requirements are rarely stated explicitly. They live in three places:
+
+- Boundaries the system hits but doesn't articulate
+- Friction users absorb but don't report
+- Dependencies almost added but ultimately unnecessary
+
+Each reveals a real need through a different signal. The methods below are systematic ways to harvest these signals.
+
+### 10.1 Boundary probing — "What can't the system do?"
+
+← D2 (rules incomplete) + T1 (world changes create new demands)
+
+Regularly attempt tasks at the edge of the system's capability. The failure mode determines the action:
+
+| Failure mode | Signal | Action |
+| --- | --- | --- |
+| **Graceful failure** | Boundary is clear and correct | Document, no change needed |
+| **Confusing failure** | Boundary exists but user can't understand it | Improve error messaging or documentation |
+| **Near-miss failure** | System almost succeeds | **High-value requirement** — small effort, large capability expansion |
+
+**Practice:** Periodically try to use the system for tasks it wasn't designed for. "What happens if I try X?" is a discovery protocol, not a bug hunt.
+
+**Why near-misses are the highest-value signal:** A near-miss means the architecture already supports the use case — only a thin layer is missing. The ratio of value created to effort required is maximized. Contrast with a complete failure, where the architecture would need fundamental changes.
+
+### 10.2 Pattern extraction — "What's being repeated?"
+
+← R2 (multiple copies drift) + Standard 2 (reduce sync artifacts)
+
+Repetition in usage is the clearest signal of a missing primitive. If users write the same three steps in every configuration, those three steps should be one step.
+
+**Method:** Count occurrences of similar patterns in configs, adapters, scripts, or user code:
+
+| Occurrences | Interpretation |
+| --- | --- |
+| 1 | One-off, no action |
+| 2 | Coincidence, observe |
+| 3+ | **Missing abstraction** — extract a primitive |
+
+The unextracted pattern is accidental complexity (§3.1) paid per-use. Extracting it converts per-use cost to one-time cost.
+
+**Warning: Extract patterns, not hypotheticals.** Only extract what has actually repeated 3+ times, not what "might" repeat. Premature abstraction is more expensive than repetition (Standard 2: don't add artifacts to maintain).
+
+### 10.3 Dependency probe — "What almost got added?"
+
+← §3.6 (toolchain completeness) + §8 Step 1 (Question)
+
+Every time you consider adding a dependency, library, or tool, record two things:
+
+1. **The pain point** — what problem triggered the search? (This is always real.)
+2. **The solution inventory** — does an existing capability already solve it? (The external solution may be unnecessary.)
+
+| Assessment | Action |
+| --- | --- |
+| Pain point real + existing capability solves it | Add glue code, not a dependency |
+| Pain point real + no existing capability | Genuine requirement — build or adopt |
+| Pain point vague + external tool is "nice to have" | Delete the impulse — this is accidental complexity |
+
+**Principle: The pain point is always real. The proposed solution is often wrong.** Separate discovering the need from evaluating the fix.
+
+### Relationship to Knowledge Lifecycle (§3.4)
+
+All three methods are instances of the lifecycle's discovery phase (① → ②):
+
+```
+Boundary probing    → discovers rules the system doesn't encode yet
+Pattern extraction  → discovers abstractions the system hasn't provided yet
+Dependency probe    → discovers capabilities the system needs but may already have
+```
+
+Once discovered, each insight enters the lifecycle: formalize as constraint (③), machine-guard (④), audit for staleness (⑤).
+
+### When to run discovery
+
+Discovery is not a scheduled activity — it's a byproduct of usage. But three events are reliable triggers:
+
+1. **After a user asks "can the system do X?" and the answer is unclear** → boundary probe
+2. **After writing the same boilerplate for the third time** → pattern extraction
+3. **After searching for a library/tool to solve a problem** → dependency probe
+
+**The discovery signal is always friction.** No friction, no discovery. Systems that are never pushed to their limits never discover what's next.
+
+---
+
+## 11. System Boundaries
 
 ### What this framework can guarantee
 
 - Known rules are not broken (verification system coverage)
-- Rules are continuously discovered (LLM cross-domain scanning as compensation)
+- Rules are continuously discovered (LLM cross-domain scanning + §10 discovery methods as compensation)
 - Verification strength continuously improves (upgrading from grep toward types/tests)
+- New value opportunities are surfaced from usage friction (§10: boundary probing, pattern extraction, dependency probing)
 
 ### What this framework cannot guarantee
 

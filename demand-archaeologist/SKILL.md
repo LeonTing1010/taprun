@@ -1,11 +1,11 @@
 ---
 name: demand-archaeologist
-description: Find validated, friction-heavy, recurring demand by digging through behavioral evidence — workarounds, failed alternatives, and explicit tool requests. Use when users want to find product ideas, validate demand, discover unmet needs, or analyze what's worth building — especially for WeChat mini-programs, indie apps, or side projects. TRIGGER when user asks "what should I build", "find me opportunities", "what's trending", "找已验证需求", or wants market research for a specific platform or audience.
+description: 需求挖掘 / 验证产品想法 / find validated SaaS ideas / product-market research / idea validation. Find what's worth building by excavating behavioral evidence — workarounds, failed alternatives, and explicit tool requests — NOT by counting surface likes. Covers two battlefields: (1) Chinese social ecosystem (小红书/微信小程序/知乎) via Tap MCP, (2) English indie maker scene (Reddit/HN/indie hackers) via RDK MCP. Use when users want to: find product ideas, validate an existing idea, discover unmet needs, research a market, find promotion angles for an existing product, or decide what to build next. TRIGGER on: "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
 argument-hint: '[platform] [audience] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '4.0.0'
+  version: '4.1.0'
 ---
 
 # Demand Archaeologist — 需求考古
@@ -345,6 +345,83 @@ Does using the tool naturally produce something shareable?
 **For each REJECTED direction:**
 - **Why cut**: Data + reason (content trap / red ocean / low demand / no platform fit)
 - Rejections prove rigor. A report that says yes to everything is useless.
+
+---
+
+### Phase 6: Promotion Loop (demand mining ≡ cold-start promotion)
+
+**Core insight:** Finding validated demand and promoting an existing product are the **same action**. When you locate a post where someone names the exact pain your product solves, that post is simultaneously:
+- Validation (someone is suffering = real need)
+- A distribution opportunity (you can respond with value)
+- A language sample (their words become your copy)
+
+This phase only runs when the user has an existing product to promote, OR when the methodology is being used in a high-trust outbound community (Reddit, HN, indie hackers, 即刻). **Do NOT run this phase for 小红书/微信生态** — those platforms have different anti-spam semantics (see platform-specific references).
+
+#### When to trigger Phase 6
+
+Run this phase if ANY of these is true:
+- User has an existing product and asked "how do I promote X"
+- The candidate direction found in Phase 3 overlaps with an existing product the user already ships
+- User explicitly asks for outreach targets or cold-start strategy
+
+#### The Outreach Target List
+
+Produce a table ranking posts by outreach value, NOT by upvotes:
+
+```markdown
+| Rank | Post Type | Link | OP's Actual Question | Reply Strategy | Risk |
+|------|-----------|------|----------------------|----------------|------|
+| 1    | 求助型    | URL  | "how do you validate" | Run product on OP's domain, paste 3 data points + source links | Low — OP asked |
+| 2    | 忏悔型    | URL  | "6 months, nobody came" | Post-mortem using product's data, "here's what the market was actually saying" | Medium — OP may be checked out |
+| 3    | 方法分享型| URL  | Author showed manual method | Mention "I automated this, here's the output on your example" | High — author may see as threat |
+```
+
+**Classification rules (Reddit-specific):**
+- **求助型** (help-seeking): OP's title is a question. **Highest value** — lowest spam risk, because OP asked.
+- **忏悔型** (confessional): Post-mortem of a failure. Medium value — OP is emotionally raw, may or may not want tools.
+- **方法分享型** (method-share): Someone is manually doing what your product automates. Read their process, note gaps, **don't challenge them publicly**.
+- **工具推荐型** (tool-recommendation): List of competing tools. Use as competitive intel; do not engage unless your product is already in the list and misrepresented.
+
+#### The Value-First Reply Template
+
+```
+[1-sentence empathy — mirror their pain in their words, not yours]
+
+[2-3 data points from the tool's actual output:
+  • Specific Reddit thread / quote / number
+  • Direct clickable link to source
+  • Observation, not conclusion]
+
+[1-sentence insight: what the pattern suggests]
+
+[Offer, no pitch: "happy to run the same search on [their specific case] if useful"]
+
+[NO product name. NO landing page link. NO CTA.]
+```
+
+Rationale: If the reply is useful, OP or another reader asks "how did you find this?" — **that** is when the product gets named, in response to a direct question. This is the only form of product-mention that doesn't trigger Reddit's account-level anti-spam.
+
+#### Anti-spam safety rules (load-bearing)
+
+1. **Never pitch first.** Data-first, product-name-last (or never, until asked).
+2. **Never cross-post the same reply.** Each reply must be specific to OP's exact question.
+3. **Account karma floor**: on Reddit, don't engage in promo-adjacent replies until account has ≥500 karma and ≥30 days age. Below that, the account will be flagged as spam regardless of content quality.
+4. **One promo-adjacent reply per thread, max.** Never follow up with "also check out...".
+5. **If an account gets a promo comment removed once, it's on a list.** Treat removal as permanent signal — switch accounts or abandon Reddit outreach from that identity.
+
+#### Success signals (what you're watching for)
+
+- **Direct**: OP replies with questions / thanks
+- **Indirect**: Another reader asks "how did you find this data" (= qualified lead)
+- **Distribution**: Reply gets upvoted independently of the parent post (= community endorsement)
+- **Validation**: Private DMs asking for the tool (= strongest possible signal, compounds over time)
+
+**Failure signals (abort conditions):**
+- Reply gets downvoted → positioning wrong, study it
+- Comment removed → account flagged, stop immediately
+- OP doesn't respond to direct question → wrong thread type, not 求助型
+
+See `references/english-indie-scene.md` for the complete pain-language query library and subreddit-specific source map.
 
 ---
 

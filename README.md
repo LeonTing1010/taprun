@@ -21,16 +21,40 @@ This repository is a [Claude Code plugin marketplace](https://docs.claude.com/en
 
 Prerequisite: [Claude Code](https://claude.ai/claude-code) installed.
 
-Add to `~/.claude/settings.json`:
+Inside Claude Code, run:
+
+```
+/plugin marketplace add LeonTing1010/taprun
+/plugin install taprun@taprun
+```
+
+Claude Code clones this repo, installs the plugin, and persists the configuration to `~/.claude/settings.json` automatically. Skills appear immediately as `/taprun:verify`, `/taprun:engineering-philosophy`, etc. Verify with `/skills`.
+
+### Recommended: auto-update
+
+Edit the marketplace entry Claude Code just wrote to `~/.claude/settings.json` and add `"autoUpdate": true`:
+
+```jsonc
+"extraKnownMarketplaces": {
+  "taprun": {
+    "source": { "source": "github", "repo": "LeonTing1010/taprun" },
+    "autoUpdate": true
+  }
+}
+```
+
+With `autoUpdate`, new commits on `main` are pulled automatically at session start — no manual `/plugin update` needed.
+
+### Declarative install (dotfiles / automation)
+
+If you manage `~/.claude/settings.json` declaratively (e.g. in a dotfiles repo), you can skip the slash commands and write both sections directly:
 
 ```jsonc
 {
   "extraKnownMarketplaces": {
     "taprun": {
-      "source": {
-        "source": "github",
-        "repo": "LeonTing1010/taprun"
-      }
+      "source": { "source": "github", "repo": "LeonTing1010/taprun" },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
@@ -39,23 +63,13 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-Start Claude Code. It automatically:
-
-1. Clones this repo to `~/.claude/plugins/marketplaces/taprun/`
-2. Installs the `taprun` plugin to `~/.claude/plugins/cache/taprun/taprun/`
-3. Exposes all skills under the `/taprun:` namespace
-
-Verify with `/skills` — you should see `taprun:verify`, `taprun:engineering-philosophy`, etc.
+Restart Claude Code after editing.
 
 ## Update
 
-When new commits land on `main`:
+With `autoUpdate: true`: automatic on session start.
 
-```
-/plugin update taprun
-```
-
-Or restart Claude Code.
+Without it: `/plugin update taprun` inside Claude Code, or restart.
 
 ## Edit & publish new skills
 

@@ -21,14 +21,22 @@ This repository is a [Claude Code plugin marketplace](https://docs.claude.com/en
 
 Prerequisite: [Claude Code](https://claude.ai/claude-code) installed.
 
-Inside Claude Code, run:
+**One-line shell install (recommended):**
+
+```bash
+claude plugin marketplace add LeonTing1010/taprun && claude plugin install taprun@tap
+```
+
+Runs from a terminal — no interactive Claude Code session required. Ideal for provisioning new machines or dotfiles scripts.
+
+**Or from inside Claude Code:**
 
 ```
 /plugin marketplace add LeonTing1010/taprun
 /plugin install taprun@tap
 ```
 
-Claude Code clones this repo, installs the plugin, and persists the configuration to `~/.claude/settings.json` automatically. Skills appear immediately as `/taprun:verify`, `/taprun:engineering-philosophy`, etc. Verify with `/skills`.
+Either path clones this repo, installs the plugin, and persists the configuration to `~/.claude/settings.json` automatically. Skills appear as `/taprun:verify`, `/taprun:engineering-philosophy`, etc. Verify with `/skills`.
 
 ### Recommended: auto-update
 

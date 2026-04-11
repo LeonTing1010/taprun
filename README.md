@@ -25,7 +25,7 @@ Inside Claude Code, run:
 
 ```
 /plugin marketplace add LeonTing1010/taprun
-/plugin install taprun@taprun
+/plugin install taprun@run
 ```
 
 Claude Code clones this repo, installs the plugin, and persists the configuration to `~/.claude/settings.json` automatically. Skills appear immediately as `/taprun:verify`, `/taprun:engineering-philosophy`, etc. Verify with `/skills`.
@@ -58,7 +58,7 @@ If you manage `~/.claude/settings.json` declaratively (e.g. in a dotfiles repo),
     }
   },
   "enabledPlugins": {
-    "taprun@taprun": true
+    "taprun@run": true
   }
 }
 ```

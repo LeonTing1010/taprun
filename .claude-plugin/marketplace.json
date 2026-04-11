@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "taprun",
-  "description": "Leo's private engineering methodology toolkit — verification gates, constraint-driven development, engineering philosophy, planning, task execution, and demand archaeology.",
+  "name": "run",
+  "description": "Leo's private marketplace for the taprun plugin — engineering methodology skills derived from first principles.",
   "owner": {
     "name": "Leo"
   },

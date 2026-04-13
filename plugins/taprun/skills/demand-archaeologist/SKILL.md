@@ -76,6 +76,8 @@ For a mini-program:
 | Competitors exist | Market is validated | Competitors may all be losing money |
 | High registration volume | Users want it | Likely just curiosity |
 | Topic trending on Weibo | Hot need | Usually content/media opportunity, not tool |
+| No competitors in my product category | Blue ocean | May be wrong category — search across ALL form factors solving the same pain |
+| My dependency's moat = my moat | Strong defensibility | Moat belongs to upstream, you're a packaging layer |
 
 **The trap pattern:** stopping at attention-layer signals and calling it validation. Every false positive here costs you a unit in the portfolio with negative expected value.
 
@@ -225,27 +227,45 @@ When reading comments on high-engagement posts, classify each signal:
 
 ---
 
-### Phase 2.5: Competitive Teardown (run in parallel with Phase 2)
+### Phase 2.5: Cross-Category Competitive Teardown (run in parallel with Phase 2)
 
-**Don't just check IF competitors exist — go USE them and find their weaknesses.**
+**Don't just check IF competitors exist — go USE them. And search across ALL form factors, not just your own product category.**
+
+The RDK case study: searched "MCP Reddit safety tools" → found zero → declared blue ocean. Meanwhile Reveddit (browser extension, 6K users) was solving the exact same problem in a different form factor. The lane wasn't empty — the search was too narrow.
+
+**Step 1: List ALL form factors that could solve this pain**
 
 ```
-Step 1: Search for existing solutions
-  → mcp__tap__page_nav("https://weixin.sogou.com/weixin?type=1&query=情绪日记+小程序")
+Example — "check if my Reddit post is shadowbanned":
+  Browser extension    (Reveddit, 6K users)
+  Web app              (removeddit.com, dead)
+  Reddit bot           (various, limited)
+  CLI tool             (none)
+  MCP tool             (RDK — our idea)
+```
 
-Step 2: Try the top 2-3 existing mini-programs
-  → Navigate, screenshot, note UX failures
+Search for solutions in EVERY form factor, not just your own. Your competitor is anyone solving the same pain, regardless of technology.
 
-Step 3: Find user reviews/complaints
-  → Search "XX小程序 不好用" on 小红书
-  → Extract specific complaints
+**Step 2: Try the top 2-3 existing solutions (any form factor)**
+
+```
+  → Install/navigate, screenshot, note UX failures
+  → Time-to-value: how many seconds from "I want to know" to "I know"
+```
+
+**Step 3: Find user reviews/complaints across all form factors**
+
+```
+  → Search "XX 不好用" / "XX alternative" / "XX stopped working"
+  → Extract specific complaints — these are your feature spec
 ```
 
 **Competitive teardown decision matrix:**
 
 | Finding | Implication |
 |---------|------------|
-| No competitors found | Blue ocean OR no market — check demand data to distinguish |
+| No competitors in ANY form factor | Blue ocean OR no market — check demand data to distinguish |
+| No competitors in MY form factor, but exist in lighter ones | **Wrong form factor** — users already have a simpler path |
 | Competitors + terrible reviews | Quality gap — build better |
 | Competitors + users love them | Red ocean — move on |
 | Competitors miss a key use case | Niche gap — build for underserved segment |
@@ -268,20 +288,61 @@ This requires ALL Phase 2 data. Do not synthesize early.
 
 **Prioritize 介质落差 and 可及性落差.** Structural gaps don't disappear next month.
 
+#### Kill Criteria — 否决清单（不是 risk flag，是 hard kill）
+
+在继续之前，对每个候选方向过一遍否决清单。**任一条成立 → 不是独立产品，降级为现有产品的功能/插件/skill。** 否决清单不是风险标注——风险可以管理，否决必须执行。
+
+| Kill Signal | 判断方法 | 案例 |
+|---|---|---|
+| 核心价值是二级 JTBD | 用户因别的原因来，这个只是"顺便" / "出事后才用" | RDK: account-safety 是留存钩子不是获客钩子 → 撑不起独立产品 |
+| 护城河属于上游依赖 | 去掉依赖后，产品还剩什么？如果答案是"prompt 和包装"，护城河不是你的 | RDK: browser bridge 是 Tap 的能力，RDK 只是调用它 |
+| 去掉 AI/prompt 后无独立收费理由 | 把所有 prompt/分析框架删掉，剩下的代码值不值钱？ | RDK: 去掉 prompt 后就是 Tap reddit/* skills 的 MCP 包装 |
+| 存在 10x 更轻的交付形态 | Phase 2.5 发现更轻形态已有用户 OR 显然可行 | RDK (MCP) vs PostGhost (浏览器扩展)：同一需求，触达成本差 100x |
+| 结构性依赖无法独立运行 | 去掉上游后产品不 work 或严重降级 | RDK 无 Tap → 只剩 RSS（score=0，数据残缺） |
+
+**一个产品通过了需求验证但命中否决清单 = 需求是真的，但这个产品不是正确载体。** 把能力归入正确的载体（母项目功能、更轻的独立产品、开源 skill）。
+
 #### Build the Synthesis Table
 
 ```markdown
-| Direction | Demand Level | Evidence | Existing Supply | Gap Type | Verdict |
-|-----------|-------------|----------|-----------------|----------|---------|
-| 情绪日记 | L4 🔧 | 5.4万 likes + "我用纸记了3个月" | 纸质手帐 | 介质落差 | ✅ BUILD |
-| 拼豆图案 | L4 🔧 | 3.3万 likes + "手动数格子好累" | 国外网站 | 可及性落差 | ✅ BUILD |
-| AI教程   | L2 👀 | 52万 likes, 0 tool comments | 教程已覆盖 | 无 | ❌ CONTENT TRAP |
-| 星座运势 | L1 💬 | 1.3万 topic / 1-80 tool likes | 博主已覆盖 | 无 | ❌ NO DEMAND |
+| Direction | Demand Level | Evidence | Existing Supply | Gap Type | Kill? | Verdict |
+|-----------|-------------|----------|-----------------|----------|-------|---------|
+| 情绪日记 | L4 🔧 | 5.4万 likes + "我用纸记了3个月" | 纸质手帐 | 介质落差 | No | ✅ BUILD |
+| 拼豆图案 | L4 🔧 | 3.3万 likes + "手动数格子好累" | 国外网站 | 可及性落差 | No | ✅ BUILD |
+| AI教程   | L2 👀 | 52万 likes, 0 tool comments | 教程已覆盖 | 无 | — | ❌ CONTENT TRAP |
+| 星座运势 | L1 💬 | 1.3万 topic / 1-80 tool likes | 博主已覆盖 | 无 | — | ❌ NO DEMAND |
+| RDK      | L4 🔧 | shadowban 恐惧真实 | Reveddit (ext) | 质量落差 | **YES: 二级JTBD + 护城河属于Tap + 更轻形态存在** | ❌ KILL → 降级为 Tap skill + PostGhost |
 ```
 
 ---
 
-### Phase 3.5: Adjacent Need Mapping (for top candidates only)
+### Phase 3.5: Form Factor Validation — 载体验证
+
+**需求成立不等于产品成立。** 同一个需求可以被 5 种形态满足，你必须证明你选的形态是最优的，而不是最方便你做的。
+
+对每个通过 Phase 3（含 Kill Criteria）的候选方向，列出所有可能的交付形态，按**用户触达成本**从低到高排序：
+
+```
+用户触达成本 = 从"我有这个问题"到"问题被解决"的总步骤/时间/前置条件
+
+示例 — "检查我的 Reddit 帖子是否被 shadowban"：
+  1. 浏览器扩展（零设置，发帖后自动检测）      ← 最低触达成本
+  2. Web app（打开网页，粘贴链接）
+  3. Reddit bot（@bot 回复帖子）
+  4. CLI 工具（安装，敲命令）
+  5. MCP 工具（安装 CLI + 配 MCP + 跑 AI agent） ← 最高触达成本
+```
+
+**规则：你选择的形态的触达成本不能比最优形态高 3x 以上。** 如果高了，要么换形态，要么解释为什么你的形态有不可替代的优势（例：批量处理、自动化、与其他工具的集成）。
+
+触达成本高但合理的例外：
+- 目标用户已经在使用你的平台（MCP 用户用 MCP 工具 = 零增量成本）
+- 需求本身是批量/自动化场景（人工操作不可行）
+- 形态本身是护城河（平台锁定、网络效应）
+
+---
+
+### Phase 4: Adjacent Need Mapping (for top candidates only)
 
 For each validated direction: **"What else does this user need?"**
 

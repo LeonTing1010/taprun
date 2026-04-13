@@ -5,7 +5,7 @@ argument-hint: '[platform] [audience] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '4.1.0'
+  version: '5.0.0'
 ---
 
 # Demand Archaeologist — 需求考古
@@ -362,7 +362,7 @@ A single tool is a product. A cluster of adjacent needs for the same user is a b
 
 ---
 
-### Phase 4: Platform Fit Test
+### Phase 5: Platform Fit Test
 
 For each surviving candidate, answer three questions:
 
@@ -383,7 +383,7 @@ Does using the tool naturally produce something shareable?
 
 ---
 
-### Phase 5: Rank and Recommend
+### Phase 6: Rank and Recommend
 
 **Summary table:**
 
@@ -409,7 +409,7 @@ Does using the tool naturally produce something shareable?
 
 ---
 
-### Phase 6: Promotion Loop (demand mining ≡ cold-start promotion)
+### Phase 7: Promotion Loop (demand mining ≡ cold-start promotion)
 
 **Core insight:** Finding validated demand and promoting an existing product are the **same action**. When you locate a post where someone names the exact pain your product solves, that post is simultaneously:
 - Validation (someone is suffering = real need)
@@ -418,7 +418,7 @@ Does using the tool naturally produce something shareable?
 
 This phase only runs when the user has an existing product to promote, OR when the methodology is being used in a high-trust outbound community (Reddit, HN, indie hackers, 即刻). **Do NOT run this phase for 小红书/微信生态** — those platforms have different anti-spam semantics (see platform-specific references).
 
-#### When to trigger Phase 6
+#### When to trigger Phase 7
 
 Run this phase if ANY of these is true:
 - User has an existing product and asked "how do I promote X"
@@ -515,6 +515,9 @@ See `references/english-indie-scene.md` for the complete pain-language query lib
 5. **Generic categories.** "AI tools" ≠ direction. "AI口语陪练 for 考研英语 students" = direction.
 6. **Ignoring adjacent needs.** The 矩阵 strategy requires seeing the ecosystem, not just the single product.
 7. **Treating one-time behavior as periodic demand.** A need that occurs once every 5 years doesn't support the portfolio economics. Confirm recurrence.
+8. **Validating demand but not delivery.** "Users fear shadowbans" (demand) ≠ "Users need an MCP tool for shadowban checking" (delivery). Always ask: is this product form the 10x best way to deliver the solution? Case study: RDK validated real pain but chose MCP (heaviest form factor); PostGhost solved it with a browser extension (lightest).
+9. **Only searching competitors in your own product category.** Your real competitor is anyone solving the same pain, regardless of technology. Reveddit (browser extension) competed with RDK (MCP tool) — same pain, different form. Search across ALL form factors.
+10. **Treating risk flags as non-blocking.** "Second-order JTBD" and "moat belongs to dependency" are kill signals, not risks to manage. If the analysis says these words, run the kill criteria checklist immediately.
 
 ---
 
@@ -527,8 +530,10 @@ Before presenting final recommendations:
 - [ ] Every candidate has comment-level evidence (Layer 2 minimum)
 - [ ] Demand ladder level assigned with proof
 - [ ] Dual search test done (topic vs. tool search comparison)
-- [ ] Competitive teardown done (tools tried, not just searched)
+- [ ] Competitive teardown done **across all form factors** (not just your product category)
 - [ ] Supply gap type identified for each recommendation
+- [ ] **Kill criteria checklist applied** — every candidate tested against 5 kill signals
+- [ ] **Form factor ranked** — all delivery forms listed, yours justified as ≤3x optimal cost
 - [ ] At least one candidate REJECTED with data
 - [ ] Platform fit test (3 questions) passed
 - [ ] Distribution flywheel checked
@@ -538,14 +543,16 @@ Before presenting final recommendations:
 
 ---
 
-## 5-Step Summary
+## 7-Step Summary
 
 ```
 1. 定标准    → Define what counts as validated BEFORE searching (prevent confirmation bias)
 2. 多源采样  → 3+ platforms. Tap MCP for social platforms — not web search summaries.
 3. 评论考古  → Read comments on top posts. Find: "求工具" / "用纸记" / "太难用" signals.
-4. 热度×空白 → Demand L3+ AND supply gap = opportunity. Otherwise pass.
-5. 平台+飞轮 → Better as mini-program? Output gets shared? → Distribution built in.
+4. 热度×空白×否决 → Demand L3+ AND supply gap AND pass kill criteria. Otherwise kill/downgrade.
+5. 载体验证  → List ALL form factors. Yours must be ≤3x optimal delivery cost. Otherwise wrong vehicle.
+6. 平台+飞轮 → Better as mini-program? Output gets shared? → Distribution built in.
+7. 推广闭环  → Demand mining = cold-start promotion. Same posts, same pain, same language.
 ```
 
-The mistake is stopping at step 2. Step 3 is where users tell you their real life, not just their scrolling behavior. Step 3 is where the portfolio sign flips from negative to positive.
+The old mistake was stopping at step 2. The NEW mistake (post-RDK) is stopping at step 3 — validating that demand exists without validating that your product is the right vehicle. Step 4-5 is where "real need" becomes "right product" or gets killed.

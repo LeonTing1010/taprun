@@ -522,6 +522,27 @@ PostGhost injects a green/red badge directly into the Reddit UI. When users scre
 
 ### Phase 7: Promotion Loop (demand mining = cold-start promotion)
 
+#### Preflight Gate (BLOCKING — run before ANY outreach)
+
+**Before writing a single reply, run `reddit/preflight` on all target subreddits:**
+
+```
+tap.run("reddit", "preflight", { subreddits: "automation,webdev,webscraping,ClaudeAI" })
+```
+
+This checks: account karma, account age, subreddit minimum requirements, self-promo rules.
+
+| Result | Action |
+|--------|--------|
+| `can_comment: NO` | **STOP.**养号 first. Use `reddit/warmup` to find safe threads, build karma. |
+| `can_comment: RISKY` (karma < 10) | **STOP.** Most subs silently filter low-karma comments via AutoMod. Your replies will be invisible. |
+| `can_comment: MAYBE` (karma < 100) | Proceed with caution. Avoid promo-adjacent content entirely. Pure technical value only. |
+| `can_comment: LIKELY` (karma ≥ 100) | Safe for value-first replies. Still no product pitching until karma ≥ 500. |
+
+**Battle-tested lesson (2026-04):** An entire demand archaeology session ran to completion — 4 rounds of analysis, 30+ tap calls, SKILL.md rewrite — only to discover at the final outreach step that the Reddit account (karma=1) couldn't post comments. The `post-comment` tap returned HTTP 500 on every attempt. This preflight gate would have caught it in 5 seconds at the start.
+
+---
+
 **Core insight:** Finding validated demand and promoting an existing product are the **same action**. When you locate a post where someone names the exact pain your product solves, that post is simultaneously:
 - Validation (someone is suffering = real need)
 - A distribution opportunity (you can respond with value)

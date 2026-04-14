@@ -1,11 +1,11 @@
 ---
 name: demand-archaeologist
-description: Evidence-based demand discovery and product-idea validation. Find what's worth building by excavating behavioral evidence — workarounds, failed alternatives, and explicit tool requests — NOT by counting surface likes. Covers two battlefields: (1) Chinese social ecosystem (小红书/微信小程序/知乎) via Tap MCP, (2) English indie maker scene (Reddit/HN/indie hackers) via RDK MCP. Use when users want to: find product ideas, validate an existing idea, discover unmet needs, research a market, find promotion angles for an existing product, or decide what to build next. TRIGGER on: "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
+description: Evidence-based demand discovery and product-idea validation. Find what's worth building by excavating behavioral evidence — workarounds, failed alternatives, explicit tool requests, and WTP signals — NOT by counting surface likes. Covers two battlefields: (1) English indie maker scene (Reddit/HN/indie hackers) via Tap MCP Reddit taps (dig/posts/search), (2) Chinese social ecosystem (小红书/微信小程序/知乎) via Tap MCP browser tools. Use when users want to: find product ideas, validate an existing idea, discover unmet needs, research a market, find promotion angles for an existing product, or decide what to build next. TRIGGER on: "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
 argument-hint: '[platform] [audience] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '6.0.0'
+  version: '7.0.0'
 ---
 
 # Demand Archaeologist
@@ -37,10 +37,19 @@ This skill exists to get the sign right.
 ## Core Formula
 
 ```
-Opportunity = Demand Heat × Supply Gap × Platform Fit × Feasibility
+Opportunity = Demand Heat × Supply Gap × WTP × TAM × Platform Fit × Feasibility
 ```
 
-All four must be present. High demand + no supply gap = red ocean. Supply gap + no demand = no market.
+All six must be present. Missing any one = no-go:
+
+| Missing | What happens |
+|---------|-------------|
+| Demand Heat | No market |
+| Supply Gap | Red ocean |
+| **WTP** | Pain exists but nobody pays — **the #1 false positive from Reddit excavation** |
+| **TAM** | Real pain in a tiny niche — can't sustain a business |
+| Platform Fit | Wrong medium for the audience |
+| Feasibility | Can't build it |
 
 ---
 
@@ -99,6 +108,35 @@ Level 1: Aware of topic               — Topic exists in feeds (noise)
 
 **Only Level 3+ is worth pursuing.** L1-L2 = content business, not tool opportunity.
 
+### Demand × WTP Matrix — Pain Does NOT Equal Purchase Intent
+
+Pain and willingness-to-pay are **two separate dimensions**. The most dangerous false positive: L4 pain in a developer community.
+
+```
+             WTP High (will pay)        WTP Low (prefers free/DIY)
+        +----------------------------+-----------------------------+
+L5 Pay  | BEST — paying for bad      | Rare (locked into bad tool) |
+        | solutions already           |                             |
+        +----------------------------+-----------------------------+
+L4 Work-| GOOD — suffering, would    | TRAP — real pain but        |
+around  | pay for relief              | audience builds own tools   |
+        +----------------------------+-----------------------------+
+L3 Search| Promising — searching     | Window shoppers             |
+        | and willing to pay          |                             |
+        +----------------------------+-----------------------------+
+L2/L1   | Content demand only        | No market                   |
+        +----------------------------+-----------------------------+
+```
+
+**The L4 + Low WTP trap (battle-tested)**: In a 2026-04 Reddit excavation, r/webscraping showed textbook L4 pain for scraper monitoring (45 comments, OP asked the same unsolved question 4 times). But 118 total comments across 3 related threads had **zero WTP verbalization**. The audience preferred Prometheus + self-built scripts. The pain was real; the product was not.
+
+**How to assess WTP on Reddit:**
+- Someone says "I'd pay for this" or asks about pricing → WTP confirmed
+- Someone describes paying for a bad alternative → L5
+- 100+ comments discussing workarounds, nobody mentions paying → **WTP = LOW**
+- Audience is developers/engineers → default WTP = LOW unless proven otherwise
+- Audience is non-technical end users → default WTP = HIGHER (they can't DIY)
+
 ### Case study: Reddit shadowban fear
 
 Reddit shadowban anxiety is Level 4. Users suffering with workarounds: manually checking old.reddit.com/user/X, opening incognito windows to see if their posts appear, literally posting "can anyone see this?" in test subreddits. Mods on r/NewToReddit describe the current workaround as "trial and error at each karma chunk (25/50/100/200/300) and each age milestone (3/7/20/30 days)." Users tolerating this friction = real need + tool gap.
@@ -113,15 +151,15 @@ Reddit shadowban anxiety is Level 4. Users suffering with workarounds: manually 
 +--- Phase 2: Parallel Sampling (launch ALL simultaneously) ----------------+
 |                                                                            |
 |  Agent A: Trend & Policy Scout       Agent B: Platform Miner (social)     |
-|  +- WebSearch: macro trends          +- Tap/RDK: navigate search pages    |
-|  +- WebSearch: platform subsidies    +- Tap/RDK: extract titles + scores  |
-|  +- WebSearch: success/failure cases +- Tap/RDK: click into top posts     |
-|                                      +- Tap/RDK: extract top comments     |
+|  +- WebSearch: macro trends          +- Tap: navigate search pages    |
+|  +- WebSearch: platform subsidies    +- Tap: extract titles + scores  |
+|  +- WebSearch: success/failure cases +- Tap: click into top posts     |
+|                                      +- Tap: extract top comments     |
 |                                                                            |
 |  Agent C: Cross-Platform Miner       Agent D: Competitive Teardown        |
-|  +- Tap/RDK: secondary platforms     +- Search ALL form factors           |
-|  +- Tap/RDK: extract Q&A signals     +- Try top existing solutions        |
-|  +- Tap/RDK: tool-request threads    +- Extract user reviews/complaints   |
+|  +- Tap: secondary platforms     +- Search ALL form factors           |
+|  +- Tap: extract Q&A signals     +- Try top existing solutions        |
+|  +- Tap: tool-request threads    +- Extract user reviews/complaints   |
 |                                                                            |
 +----------------------------------------------------------------------------+
                                     |
@@ -140,6 +178,24 @@ Reddit shadowban anxiety is Level 4. Users suffering with workarounds: manually 
 ---
 
 ## Workflow
+
+### Phase 0: Existing Product Check (before any research)
+
+**Before looking for new products to build:**
+
+```
+Does the user already have a product (or products)?
+  → YES → Could the validated pain be solved by DISTRIBUTING the existing product better?
+    → YES → Opportunity is DISTRIBUTION, not creation. Skip to Phase 7 (Promotion Loop).
+    → NO  → Continue to Phase 1.
+  → NO → Continue to Phase 1.
+```
+
+This prevents the most expensive mistake: building product #N+1 when the answer is marketing product #N.
+
+**Battle-tested case (2026-04)**: A 4-round Reddit excavation (TapWatch → SiteWatch → TicketWatch → CompeteWatch) killed all 4 new product ideas. The strongest Reddit signals (102-score "AI automation is glorified scripts", 45-score "AI agents are 80% hype") pointed directly at the user's existing product (Tap). The answer was always distribution, not creation — but Phase 0 didn't exist, so 4 rounds were wasted discovering this.
+
+---
 
 ### Phase 1: Define Filters (before any research)
 
@@ -165,10 +221,10 @@ Launch **parallel agents** — one per source type:
 
 | Source | Tool | What to Extract |
 |--------|------|-----------------|
-| **Developer communities** (Reddit, HN, indie hackers, V2EX) | RDK MCP / WebSearch | Validated success/failure cases, actual revenue numbers |
+| **Developer communities** (Reddit, HN, indie hackers, V2EX) | Tap MCP (reddit taps) / WebSearch | Validated success/failure cases, actual revenue numbers |
 | **Trend reports** | WebSearch | Macro directions, market sizing, platform subsidies |
-| **Social platform feeds** (Reddit, Xiaohongshu, Weibo) | **RDK MCP / Tap MCP** | Titles + engagement + **top comments** |
-| **Platform search results** | **RDK MCP / Tap MCP** | What users ACTIVELY SEEK |
+| **Social platform feeds** (Reddit, Xiaohongshu, Weibo) | **Tap MCP (reddit taps / browser tools)** | Titles + engagement + **top comments** |
+| **Platform search results** | **Tap MCP (reddit taps / browser tools)** | What users ACTIVELY SEEK |
 | **Q&A platforms** (Zhihu, StackOverflow) | **Tap MCP / WebSearch** | "Is there a tool for X" question threads + follower counts |
 | **Official policy** | WebSearch | What the platform is subsidizing NOW (timing signal) |
 
@@ -176,20 +232,34 @@ Launch **parallel agents** — one per source type:
 
 **Use MCP tools to browse platforms directly.** Do NOT substitute with WebSearch.
 
-For **Reddit** (English indie scene):
+For **Reddit** (English indie scene) — use Tap MCP Reddit taps:
 ```
-Step 1: Discover relevant subreddits
-  → mcp__rdk__reddit_discover("shadowban check tool")
+Step 1: Cross-subreddit discovery (parallel)
+  → tap.run("reddit", "dig", { keyword: "browser automation broken", 
+      subreddits: "webdev,automation,ClaudeAI,webscraping", min_comments: 10 })
+  → Returns posts with body text, sorted by engagement
 
-Step 2: Search with pain language
-  → mcp__rdk__reddit_search({ query: "shadowbanned", subreddit: "NewToReddit" })
+Step 2: Batch comment tree extraction
+  → tap.run("reddit", "posts", { urls: "url1,url2,url3", depth: 10, max_comments: 50 })
+  → Returns full threaded comment trees — THIS IS WHERE THE GOLD IS
 
-Step 3: Deep-dive into high-signal threads
-  → mcp__rdk__reddit_post({ url: "<thread_url>" })
+Step 3: Single post deep dive (when you need max depth on one thread)
+  → tap.run("reddit", "post", { url: "...", depth: 10, max_comments: 100 })
 
-Step 4: Extract comments — THE GOLD MINE
-  → Read the full thread. Classify each comment by signal type (see taxonomy below).
+Step 4: Targeted search (keyword + subreddit + comment search)
+  → tap.run("reddit", "search", { keyword: "...", subreddit: "webscraping", type: "comment" })
 ```
+
+**The two-step workflow that replaced 6+ ad-hoc calls:**
+```
+dig(keyword, subreddits)  →  find high-engagement posts with body text
+posts(urls from dig)      →  batch extract full comment trees
+```
+
+Other useful Reddit taps:
+- `reddit/relevant` — find outreach targets in specific subreddits (includes excerpt)
+- `reddit/mine` — surface demand signals with pain/demand classification
+- `reddit/audience` — discover subreddits where target audience gathers
 
 For **Chinese social platforms** (Xiaohongshu, Zhihu, etc.):
 ```
@@ -312,17 +382,29 @@ This requires ALL Phase 2 data. Do not synthesize early.
 
 #### Kill Criteria Checklist — Hard Kills, Not Risk Flags
 
-Before continuing, run every candidate through the kill checklist. **Any single criterion met → not a standalone product. Downgrade to a feature/plugin/skill within an existing product.** Kill criteria are not risk flags — risks can be managed, kills must be executed.
+Before continuing, run every candidate through the kill checklist. **Any single criterion met → not a standalone product.** Kill criteria are not risk flags — risks can be managed, kills must be executed.
+
+**Structural kills** (wrong vehicle):
 
 | Kill Signal | How to Detect | Case Study |
 |---|---|---|
-| Core value is a second-order JTBD | Users come for something else; this is "just in case" / "after things go wrong" | RDK: account-safety is a retention hook, not an acquisition hook — can't sustain a standalone product |
+| Core value is a second-order JTBD | Users come for something else; this is "just in case" / "after things go wrong" | RDK: account-safety is a retention hook, not an acquisition hook |
 | Moat belongs to upstream dependency | Remove the dependency — what's left? If the answer is "prompts and packaging," the moat isn't yours | RDK: browser bridge is Tap's capability; RDK just calls it |
-| No standalone billing justification without AI/prompts | Delete all prompts and analysis frameworks — is the remaining code worth paying for? | RDK: strip the prompts and you have an MCP wrapper around Tap's reddit skills |
-| A 10x lighter delivery form factor exists | Phase 2.5 found lighter form factors with existing users OR an obviously viable lighter path | RDK (MCP tool) vs PostGhost (browser extension): same need, 100x difference in user reach cost |
-| Structural dependency — can't run independently | Remove upstream and the product doesn't work or severely degrades | RDK without Tap → only RSS data left (scores = 0, crippled) |
+| No standalone billing justification without AI/prompts | Delete all prompts — is the remaining code worth paying for? | RDK: strip the prompts → MCP wrapper around Tap's reddit skills |
+| A 10x lighter delivery form factor exists | Phase 2.5 found lighter form factors with existing users | RDK (MCP) vs PostGhost (extension): same need, 100x reach cost difference |
+| Structural dependency — can't run independently | Remove upstream and the product doesn't work | RDK without Tap → only RSS data left (crippled) |
 
-**A product that passes demand validation but hits a kill criterion = the demand is real, but this product is the wrong vehicle.** Fold the capability into the right vehicle (parent project feature, lighter standalone product, open-source skill).
+**Market kills** (wrong economics — added from 2026-04 Reddit excavation):
+
+| Kill Signal | How to Detect | Case Study |
+|---|---|---|
+| **Zero WTP in 100+ comments** | Deep comment trees show pain but nobody says "I'd pay" or describes paying for alternatives | TapWatch: 118 comments across 3 scraper-monitoring threads, zero WTP verbalization. Developers prefer Prometheus + self-built scripts |
+| **TAM < $250K/year** | Addressable audience × price × realistic conversion < $250K | TapWatch: 6,500 professional scraper operators × $29/mo × 10% = $226K/year |
+| **Free alternatives cover 80%+** | Existing free tools (open source, built-in platform features, DIY) solve most of the use case | SiteWatch: Visualping (free tier) + changedetection.io (open source) + Distill.io cover 90% of web change monitoring |
+| **Recurrence < monthly** | Pain is real but happens too infrequently to sustain a subscription | CompeteWatch: PMs do competitive pricing analysis quarterly, not daily |
+| **Existing product already covers it** | User's own product already solves this pain → opportunity is distribution, not creation | TapWatch: tap.doctor already does scraper health checks; a standalone monitoring product would compete with the user's own tool |
+
+**A product that passes demand validation but hits a kill criterion = the demand is real, but this product is the wrong vehicle.** Fold the capability into the right vehicle (parent project feature, lighter standalone product, open-source skill). **Expect to kill 80% of candidates.**
 
 #### Build the Synthesis Table
 
@@ -563,7 +645,7 @@ See `references/english-indie-scene.md` for the complete pain-language query lib
 
 Before presenting final recommendations:
 
-- [ ] At least 3 source types consulted (WebSearch AND platform browsing via Tap/RDK MCP)
+- [ ] At least 3 source types consulted (WebSearch AND platform browsing via Tap MCP)
 - [ ] Every candidate has real platform engagement data (not summaries)
 - [ ] Every candidate has comment-level evidence (Layer 2 minimum)
 - [ ] Demand ladder level assigned with proof
@@ -581,16 +663,22 @@ Before presenting final recommendations:
 
 ---
 
-## 7-Step Summary
+## 8-Step Summary
 
 ```
+0. Existing product check → Do you already have something that solves this? → distribution, not creation.
 1. Define criteria  → Set what counts as validated BEFORE searching (prevent confirmation bias)
-2. Multi-source     → 3+ platforms. Tap/RDK MCP for platforms — not web search summaries.
-3. Comment archaeology → Read comments on top posts. Find: "is there a tool" / "I do it manually" / "tried X, it broke" signals.
-4. Heat × Gap × Kill → Demand L3+ AND supply gap AND pass kill criteria. Otherwise kill/downgrade.
-5. Form factor      → List ALL delivery forms. Yours must be <=3x optimal reach cost. Otherwise wrong vehicle.
+2. Multi-source     → 3+ platforms. Tap MCP Reddit taps (dig → posts) for Reddit. Tap browser tools for social platforms.
+3. Comment archaeology → Read comments on top posts. Find: "is there a tool" / "I do it manually" / "tried X, it broke" / "I'd pay for this".
+4. Heat × Gap × WTP × TAM × Kill → ALL must pass. Pain without WTP = trap. Small TAM = no business. Apply kill checklist.
+5. Form factor      → List ALL delivery forms. Yours must be <=3x optimal reach cost.
 6. Platform + flywheel → Right platform? Output gets shared? → Distribution built in.
 7. Promotion loop   → Demand mining = cold-start promotion. Same posts, same pain, same language.
 ```
 
-The old mistake was stopping at step 2. The NEW mistake (learned from the RDK→PostGhost pivot) is stopping at step 3 — validating that demand exists without validating that your product is the right vehicle. Steps 4-5 are where "real need" becomes "right product" or gets killed.
+**Three failure modes, learned the hard way:**
+- Stopping at step 2 → topic heat ≠ tool demand (the original mistake)
+- Stopping at step 3 → demand exists but wrong vehicle (the RDK→PostGhost lesson)
+- Stopping at step 3 → demand exists but zero WTP in the target audience (the 2026-04 Reddit excavation lesson: TapWatch/SiteWatch/TicketWatch/CompeteWatch all killed)
+
+**Reality is iterative, not linear.** Expect: search → kill → pivot → search → kill → realize answer was in Phase 0. The skill prescribes phases in order, but execution loops back to earlier phases when a direction dies. Pivoting is not failure — it's the methodology working.

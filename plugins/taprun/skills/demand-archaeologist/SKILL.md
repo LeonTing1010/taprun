@@ -1,11 +1,11 @@
 ---
 name: demand-archaeologist
-description: Evidence-based demand discovery and product-idea validation. Find what's worth building by excavating behavioral evidence — workarounds, failed alternatives, explicit tool requests, and WTP signals — NOT by counting surface likes. Covers two battlefields: (1) English indie maker scene (Reddit/HN/indie hackers) via Tap MCP Reddit taps (dig/posts/search), (2) Chinese social ecosystem (小红书/微信小程序/知乎) via Tap MCP browser tools. Use when users want to: find product ideas, validate an existing idea, discover unmet needs, research a market, find promotion angles for an existing product, or decide what to build next. TRIGGER on: "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
+description: Evidence-based demand discovery and product-idea validation, grounded in the Costly Signaling Law (Zahavi/Spence). Find what's worth building by weighting signals by emission cost — workarounds, failed alternatives, paid purchases, open-source artifacts, funded competitors — NOT by counting cheap signals like likes or comments. Covers three signal fronts: (1) demand-side consumer comments on Reddit/HN/indie hackers via Tap MCP Reddit taps + Chinese social (小红书/知乎/v2ex) via browser taps, (2) supply-side investment signals via GitHub/ProductHunt/hiring/funding data, (3) creator-bet signals via video platform taps (Bilibili/YouTube). Use when users want to find product ideas, validate an existing idea, discover unmet needs, research a market, or decide what to build next. TRIGGER on "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
 argument-hint: '[platform] [audience] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '7.0.0'
+  version: '8.0.0'
 ---
 
 # Demand Archaeologist
@@ -34,6 +34,78 @@ This skill exists to get the sign right.
 
 ---
 
+## The Underlying Principle: Costly Signaling
+
+Everything else in this skill — Validation Hierarchy, Demand Ladder, signal weights, kill criteria — is a **consequence** of one law. Internalize the law and every edge case becomes derivable without memorization.
+
+> **Costly Signaling Law** *(Zahavi 1975, Spence 1973, Maynard Smith 1982)*
+>
+> **A signal's information content is proportional to the cost borne by its sender.**
+> Cheap-to-fake signals carry near-zero information. Expensive-to-fake signals carry real information.
+
+This is a structural theorem, not a heuristic. It holds across:
+- Evolutionary biology (peacock tails cost energy → honest mate-quality signal)
+- Labor economics (Spence's job-market signaling, Nobel 2001)
+- Game theory (cheap talk vs. commitment equilibria)
+- Information theory (high-cost actions carry more bits of evidence about the actor's state)
+
+**The only precondition**: sender's signaling cost varies with type. Where that holds, the law fires.
+
+### How to weight any signal you encounter
+
+```
+Before weighting a signal, ask three questions:
+
+  1. What did it cost the signaler to emit this?        (time / money / reputation / irrevocability)
+  2. Could a random person fake this cheaply?            (if yes, discount heavily)
+  3. Does emitting it commit the signaler to anything?   (if yes, weight heavily)
+```
+
+Information content per signal ≈ cost × irreversibility × public-commitment.
+
+### Consumer-side signals ranked by cost (ascending)
+
+| Signal | Cost to emit | Information weight |
+|---|---|---|
+| Like / upvote / view | Near-zero (one tap) | ★ |
+| Comment "looking for X" | ~10 sec typing | ★★ |
+| Install free tool | ~1 min + friction | ★★★ |
+| Sign up with email | ~2 min + lead-magnet cost | ★★★ |
+| Pay without discount | Money + irrevocable | ★★★★ |
+| Repeat purchase / renew | Money + sustained commitment | ★★★★★ |
+
+### Supply-side signals ranked by cost (ascending)
+
+Supply-side (what *builders* bet on) is often cheaper to collect than consumer-side because builders pre-aggregate their judgment into visible artifacts. Use it as a force multiplier.
+
+| Signal | Cost to emit | Information weight |
+|---|---|---|
+| Writing a comment about the problem | ~minutes | ★ |
+| Starring a GitHub repo in the category | ~click + account | ★★ |
+| Publishing a blog post / video on the pain | ~hours-days | ★★★ |
+| Launching on ProductHunt | Weeks-months of build + public reputation | ★★★★ |
+| Open-sourcing a workaround (`S_rolled_own`) | Days-weeks of build + maintenance commitment | ★★★★ |
+| Hiring for the role / category | Committed salary budget | ★★★★ |
+| VC funding round in the space | Capital at stake, LP pressure | ★★★★★ |
+
+### The information inequality
+
+```
+aggregate(cheap signals) ≤ entropy ceiling of cheap signal   (Shannon bound)
+                         ≪   single costly signal
+```
+
+100 upvotes < 1 person who shipped a competing product.
+1000 "I'd pay for this" comments < 1 Stripe invoice that cleared.
+
+This is why Phase 2.5 Competitive Teardown is non-optional and why Phase 2 must sample supply-side alongside demand-side.
+
+### Why attention platforms fail the same way
+
+Social recommender algorithms optimize watch-time × engagement — cheap signals at scale. Goodhart's Law guarantees attention decouples from value as optimization pressure grows. Our pipeline faces the same risk: pattern-match-count decouples from real demand once we optimize for it. The fix in both domains is identical — **switch the fitness function to costly signals**.
+
+---
+
 ## Core Formula
 
 ```
@@ -55,17 +127,19 @@ All six must be present. Missing any one = no-go:
 
 ## The Validation Hierarchy (Weakest to Strongest)
 
-Not all demand signals are equal. The hierarchy:
+Not all demand signals are equal. This is a **direct consequence** of the Costly Signaling Law above — the ordering below drops out of ranking signals by sender cost and irreversibility:
 
 ```
-Repeat purchase   ← Came back without prompting           (strongest: they returned)
-Paid              ← Paid without discount                  (strong: real willingness to pay)
-Behavioral        ← Completed a core action                (medium: behavioral evidence)
-Intent            ← Said "this is useful" / saved          (weak: intent ≠ action)
-Attention         ← Liked / viewed / shared                (noise: attention ≠ need)
+Repeat purchase   ← Money + sustained commitment         (strongest: cost repeated over time)
+Paid              ← Money + irrevocable                  (strong: real skin in the game)
+Behavioral        ← Time + friction surmounted           (medium: non-zero cost barrier crossed)
+Intent            ← ~10 seconds of typing                (weak: low cost, easy to fake)
+Attention         ← One tap / free glance                (noise: near-zero cost)
 ```
 
 **Validated demand = user spontaneously completed the core action you care about, without being pushed.**
+
+The word *spontaneously* is load-bearing. Pushed action (via discount / FOMO / coercion) shifts the signaling cost from the user to you — the user's signal goes back to being cheap.
 
 Examples by product type:
 - Content product: user returns weekly on their own (not from push notification)
@@ -215,18 +289,31 @@ Ask the user to confirm or customize these filters. Skip if user already provide
 
 ### Phase 2: Multi-Source Demand Sampling
 
-Gather signals from **at least 3 different source types.** Single-source signals are unreliable.
+Gather signals from **at least 3 different source types, spanning both consumer-side (demand) and supply-side (investment)**. Consumer-side alone is cheap signal — it aggregates into noise (see Costly Signaling section). Supply-side is rarer but each data point is orders of magnitude more informative.
 
 Launch **parallel agents** — one per source type:
 
-| Source | Tool | What to Extract |
-|--------|------|-----------------|
-| **Developer communities** (Reddit, HN, indie hackers, V2EX) | Tap MCP (reddit taps) / WebSearch | Validated success/failure cases, actual revenue numbers |
-| **Trend reports** | WebSearch | Macro directions, market sizing, platform subsidies |
-| **Social platform feeds** (Reddit, Xiaohongshu, Weibo) | **Tap MCP (reddit taps / browser tools)** | Titles + engagement + **top comments** |
-| **Platform search results** | **Tap MCP (reddit taps / browser tools)** | What users ACTIVELY SEEK |
-| **Q&A platforms** (Zhihu, StackOverflow) | **Tap MCP / WebSearch** | "Is there a tool for X" question threads + follower counts |
-| **Official policy** | WebSearch | What the platform is subsidizing NOW (timing signal) |
+#### Consumer-side sources (cheap signals — aggregate for pattern, never for validation)
+
+| Source | Tool | Signal Cost | What to Extract |
+|--------|------|-------------|-----------------|
+| **Developer communities** (Reddit, HN, indie hackers, V2EX) | Tap MCP (reddit taps) / WebSearch | ★★ | Validated success/failure cases, actual revenue numbers |
+| **Social platform feeds** (Reddit, Xiaohongshu, Weibo) | **Tap MCP (reddit / browser tools)** | ★ | Titles + engagement + **top comments** |
+| **Platform search results** | **Tap MCP (reddit / browser tools)** | ★★ | What users ACTIVELY SEEK |
+| **Q&A platforms** (Zhihu, StackOverflow) | **Tap MCP / WebSearch** | ★★ | "Is there a tool for X" threads + follower counts |
+| **App Store low-star reviews** | **Tap MCP (qimai/reviews)** | ★★★ | Paid users frustrated — the rare consumer signal that cost money to generate |
+
+#### Supply-side sources (costly signals — weight each data point heavily)
+
+| Source | Tool | Signal Cost | What to Extract |
+|--------|------|-------------|-----------------|
+| **GitHub repos in the category** | WebSearch / `gh` CLI | ★★★★ | Repo count, star velocity, last-commit freshness, open-issue themes (= unsolved pain even in existing tools) |
+| **ProductHunt launches** | WebSearch `site:producthunt.com <category>` | ★★★★ | New entrants in last 90 days, upvote distribution, comment critiques |
+| **Hiring boards** (LinkedIn, YC Work at a Startup, Indeed) | WebSearch | ★★★★ | Roles being hired for this category = companies committing salary budget |
+| **Funding databases** (Crunchbase, AngelList, Bloomberg) | WebSearch | ★★★★★ | Raises in the space — capital + LP pressure = strongest timing signal |
+| **Creator-bet tracking** (Bilibili/YouTube creator count on topic, publishing velocity) | **Tap MCP (bilibili, youtube taps)** | ★★★ | Creators investing hours → betting audience cares. Velocity derivative = timing signal |
+| **Open-source workaround artifacts** | GitHub / blog posts / gists | ★★★★ | `S_rolled_own` — the strongest signal that pain is real AND monetizable (someone paid with their time) |
+| **Trend reports / policy** | WebSearch | ★★★ | Macro direction, platform subsidies, regulatory tailwinds |
 
 #### How to Mine Platforms
 
@@ -297,19 +384,35 @@ For each candidate direction, run **2 searches** and compare:
 
 #### Comment Archaeology: Signal Taxonomy
 
-When reading comments on high-engagement posts, classify each signal:
+When reading comments on high-engagement posts, classify each signal.
 
-| Signal Type | Example Comment | Demand Level |
-|-------------|----------------|--------------|
-| **Explicit tool request** | "Is there a tool that does this?" | L3 |
-| **Tool request + likes** | "Is there a tool for this" with 20+ upvotes | L3+ (pre-qualified leads) |
-| **Clumsy workaround** | "I just open an incognito window and check manually" | L4 |
-| **Failed alternative** | "Tried Reveddit but it stopped working after Pushshift died" | L4 |
-| **Willingness to pay** | "I'd pay for this" / "cheaper than X and I'm in" | L5 |
-| **Frequency signal** | "Every time I post" / "I check this daily" | Recurrence confirmed |
-| **Sharing intent** | "I wish I could share this report with my team" | Distribution flywheel potential |
+**Demand-side signals** (what consumers emit — cost borne by the user):
 
-**One comment saying "is there a tool for this?" with 50 upvotes outweighs 50K post likes.** It's a pre-qualified lead with a buying signal.
+| Signal Type | Example | Level | Signal Cost |
+|---|---|---|---|
+| **Explicit tool request** | "Is there a tool that does this?" | L3 | ★★ |
+| **Tool request + likes** | "Is there a tool for this" with 20+ upvotes | L3+ | ★★ × N |
+| **Clumsy workaround** | "I just open an incognito window and check manually" | L4 | ★★★ (repeated time cost) |
+| **Failed alternative** | "Tried Reveddit but it stopped working after Pushshift died" | L4 | ★★★★ (paid with time + frustration) |
+| **Willingness to pay** *(verbal)* | "I'd pay for this" | L5_wtp | ★★ (cheap talk, discount heavily) |
+| **Paid workaround** *(behavioral)* | "I'm paying $X/mo for [bad alternative]" | L5_paid | ★★★★★ (money + irrevocable) |
+| **Frequency signal** | "Every time I post" / "I check this daily" | recurrence | ★★★ (time cost compounds) |
+| **Sharing intent** | "I wish I could share this report with my team" | distribution potential | ★★ |
+
+**Supply-side signals** (what builders/capital emit — cost borne by producers, highest information density):
+
+| Signal Type | Example Evidence | Implication | Signal Cost |
+|---|---|---|---|
+| `S_rolled_own` | "I built a hacky shell script for this last year" / public GitHub repo | Feasibility proven. Pain real enough to justify days-weeks of work. | ★★★★ |
+| `S_launched` | Competing tool appeared on ProductHunt in last 90 days | Someone else is building — validates market but narrows window | ★★★★ |
+| `S_funded` | VC round / grant / bootstrap revenue in the category | Capital committed = strongest timing signal | ★★★★★ |
+| `S_hired` | Active job postings for roles in this category | Company committing salary budget = supply-side WTP proof | ★★★★ |
+| `S_authored` | Bilibili/YouTube creators making multi-hour content on topic, velocity rising | Creators betting hours = leading indicator of audience demand | ★★★ |
+| `S_failed` | Competitor shutting down, API sunset, acqui-hire | Timing window opens IF demand persists past the failure | ★★★★★ |
+
+**One supply-side data point can outweigh 100 demand-side comments.** A Stripe-cleared payment, a GitHub repo with 500 stars, or a VC-funded competitor each carry more information about market reality than a thousand upvoted "wish there was X" comments.
+
+**One comment saying "is there a tool for this?" with 50 upvotes outweighs 50K post likes** — and one person shipping a competing product outweighs 50 such comments.
 
 ---
 
@@ -347,6 +450,26 @@ Search for solutions in EVERY form factor, not just your own. Your competitor is
   → Search "Reveddit alternative" / "Reveddit stopped working" / "X sucks"
   → Extract specific complaints — these are your feature spec
 ```
+
+**Step 4: Measure each competitor's cost-of-existence (Costly Signaling applied)**
+
+Competitor existence isn't the key data — **cost sunk into competitors** is. This determines the resistance you face entering, and often reveals whether "existing solution" is really viable or already dying.
+
+```
+For each competitor, estimate:
+  → Raised capital        (Crunchbase / press)
+  → Team size             (LinkedIn / about page)
+  → Years operating       (first commit / first mention)
+  → User base magnitude   (self-reported / Similarweb / review count)
+  → Maintenance signal    (last release / last commit / recent reviews)
+```
+
+| Observation | Interpretation |
+|---|---|
+| 3 competitors, all solo founders, 1-2 years old | Soft resistance — lane still formative |
+| 5 competitors, avg $5M raised, 10-person teams | Hard resistance — need 10x differentiation |
+| Single dominant competitor + funded, but recent reviews show decay | **Timing window** — Reveddit/Pushshift pattern |
+| Many competitors but none have product-market fit (high churn in reviews) | Market validated, execution gap — **build better** |
 
 **Competitive teardown decision matrix:**
 
@@ -398,6 +521,7 @@ Before continuing, run every candidate through the kill checklist. **Any single 
 
 | Kill Signal | How to Detect | Case Study |
 |---|---|---|
+| **Cheap-signal-only** | All signals are ★★ or below (comments, upvotes, intent). **Zero costly signals** in the cluster: no L5_paid, no S_rolled_own, no S_launched, no S_funded, no S_hired. | Shannon-bound kill: `aggregate(cheap) ≤ entropy ceiling of cheap` — no amount of upvote aggregation reaches the information content of a single Stripe payment or launched competitor. Pain may still exist, but there's no evidence anyone has bet anything on solving it. |
 | **Zero WTP in 100+ comments** | Deep comment trees show pain but nobody says "I'd pay" or describes paying for alternatives | TapWatch: 118 comments across 3 scraper-monitoring threads, zero WTP verbalization. Developers prefer Prometheus + self-built scripts |
 | **TAM < $250K/year** | Addressable audience × price × realistic conversion < $250K | TapWatch: 6,500 professional scraper operators × $29/mo × 10% = $226K/year |
 | **Free alternatives cover 80%+** | Existing free tools (open source, built-in platform features, DIY) solve most of the use case | SiteWatch: Visualping (free tier) + changedetection.io (open source) + Distill.io cover 90% of web change monitoring |
@@ -620,9 +744,11 @@ See `references/english-indie-scene.md` for the complete pain-language query lib
 
 ## Key Heuristics
 
-1. **"Repeatedly solving it the hard way" = minimum validation bar.** Manual processes, browser workarounds, copy-paste routines — users tolerating friction = real need + tool gap. This evidence IS your product spec.
+0. **Weight every signal by its emission cost** *(Costly Signaling, the root heuristic from which the rest derive)*. Before aggregating, ask: what did it cost the signaler? Discount cheap-talk signals; weight irrevocable-cost signals heavily. 100 upvotes < 1 shipped competitor. 1000 "I'd pay" < 1 Stripe invoice.
 
-2. **Comments > likes.** One "is there a tool for this?" with 50 upvotes outweighs 50K post likes. Comments reveal the WHY and the WHO.
+1. **"Repeatedly solving it the hard way" = minimum validation bar.** Manual processes, browser workarounds, copy-paste routines — users tolerating friction = real need + tool gap. (Why: sustained time cost is a costly signal. This evidence IS your product spec.)
+
+2. **Comments > likes.** One "is there a tool for this?" with 50 upvotes outweighs 50K post likes. Comments reveal the WHY and the WHO. (Why: typing costs ~10s; tapping like costs ~0.1s.)
 
 3. **Topic heat ≠ tool demand.** Do the dual search test every time. The delta tells the story.
 
@@ -634,7 +760,9 @@ See `references/english-indie-scene.md` for the complete pain-language query lib
 
 7. **Structural gaps > temporary gaps.** Medium gaps ("介质落差") and accessibility gaps ("可及性落差") persist. Awareness gaps ("认知落差") close in months.
 
-8. **Failed alternatives = strongest moat signal.** Users tried 3 tools and quit all of them → their complaints are your feature spec AND a reason they'll switch again. Reveddit's death gave PostGhost both its feature spec (real-time, no Pushshift) and its marketing angle ("the Reveddit alternative that actually works").
+8. **Failed alternatives = strongest moat signal.** Users tried 3 tools and quit all of them → their complaints are your feature spec AND a reason they'll switch again. (Why: they already paid to discover inadequacy — a costly signal that simultaneously validates pain AND commits them to switch.)
+
+9. **Watch builders, not watchers.** Creators spending hours making content on a topic, devs shipping competing tools, VCs funding the space — these supply-side bets carry more information than any volume of consumer complaints. Triangulate demand-side with supply-side; never rely on either alone.
 
 ---
 
@@ -669,11 +797,14 @@ Before presenting final recommendations:
 - [ ] At least 3 source types consulted (WebSearch AND platform browsing via Tap MCP)
 - [ ] Every candidate has real platform engagement data (not summaries)
 - [ ] Every candidate has comment-level evidence (Layer 2 minimum)
+- [ ] **At least one costly signal present** (★★★★ or higher: L5_paid / S_rolled_own / S_launched / S_funded / S_hired). Cheap-signal-only clusters fail Shannon-bound kill.
+- [ ] **Supply-side sampled alongside demand-side** — GitHub / ProductHunt / hiring / funding / creator-bet data collected for each candidate
 - [ ] Demand ladder level assigned with proof
 - [ ] Dual search test done (topic vs. tool search comparison)
 - [ ] Competitive teardown done **across all form factors** (not just your product category)
+- [ ] **Competitor cost-of-existence measured** — capital raised, team size, years operating, user base, maintenance signal
 - [ ] Supply gap type identified for each recommendation
-- [ ] **Kill criteria checklist applied** — every candidate tested against 5 kill signals
+- [ ] **Kill criteria checklist applied** — every candidate tested against all 6 kill signals (including cheap-signal-only kill)
 - [ ] **Form factor ranked** — all delivery forms listed, yours justified as <=3x optimal cost
 - [ ] At least one candidate REJECTED with data
 - [ ] Platform fit test (3 questions) passed

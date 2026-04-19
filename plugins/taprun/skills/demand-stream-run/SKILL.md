@@ -25,7 +25,7 @@ Weekly demand-mining session over `~/.tap/demand-archive/stream/`. Agent-driven 
 ## The three verbs (from `~/.tap/demand-archive/stream/agent-tools.ts`)
 
 ```ts
-import { openSession, sweep, classify, flushToLedger, state } from "./agent-tools.ts";
+import { openSession, sweep, classify, flushToLedger, readThread, state } from "./agent-tools.ts";
 import { expansionQueries, SWEEP_QUERIES, type Query } from "./search.ts";
 import { runSeed } from "./seed.ts";
 
@@ -34,9 +34,10 @@ const s = openSession("2026-W<NN>");
 
 | Verb | What it does | When to call |
 |---|---|---|
-| `sweep(queries, session, round)` | Fetches + dedupes + appends docs, detects new events, appends to `events.jsonl` via `eventKey` | Each round — initial sweep + each expansion |
-| `classify(rules, session?)` | Appends to global `classifications.jsonl` ledger, upserts theme assignments in global `themes.json` | After each sweep, for each new `(canonical, pattern_label)` seen |
+| `sweep(queries, session, round)` | Fetches + dedupes + appends docs, enriches comment docs with parent post context, detects new events | Each round — initial sweep + each expansion |
+| `classify(rules, session?)` | Appends to global `classifications.jsonl`, upserts theme assignments in global `themes.json` | After each sweep, for each new `(canonical, pattern_label)` seen |
 | `flushToLedger(session)` | Persists newly valid demand events to global `event-ledger.jsonl` for cross-week accumulation | Immediately after every `classify()` call |
+| `readThread(session, postId)` | Returns `{ post, comments[], total_comments }` — full conversation tree for a postId | When event's snippet + parent_title + parent_body_head leave the signal ambiguous (corroboration vs rebuttal) |
 | `state(session, { lookback_weeks? })` | Returns `{ complete, near, far, abandoned }` clusters; merges prior-week ledger events when `lookback_weeks > 0` | Before deciding what to expand; at end of session |
 
 **The global registries (`themes.json`, `classifications.jsonl`, `event-ledger.jsonl`) carry across weeks.** Prior sessions' judgments auto-apply to matching canonicals — you only classify *new* `(canonical, pattern_label)` pairs. Slow-building themes (< 5 events/week) surface via ledger accumulation across weeks.
@@ -81,9 +82,15 @@ Terminate when near.length === 0, or round ≥ 3, or budget ≥ 200 searches.
 
 ## Context budget guardrail
 
-**Do not load `docs-all.jsonl` into context during classify.** Events carry `snippet` (±chars of match context), `parent_title`, and `parent_body_head` (first 150 chars of body) — sufficient for valid/noise and theme judgments. A session's `docs-all.jsonl` can exceed 600 KB ≈ 150K tokens; pulling it into context 5–10×s the session cost.
+**Three-tier context discipline:**
 
-Classify from `events.jsonl` alone. If a specific event is genuinely ambiguous even with `parent_title` + `parent_body_head`, read that one doc by URL (single `Read` call), not the full file.
+1. **Default (cheap, from events.jsonl)**: `snippet` + `parent_title` + `parent_body_head` — handles ~80% of classify decisions. For comment events, `parent_title`/`parent_body_head` are auto-filled from the parent post during sweep enrichment.
+
+2. **Thread (medium, on demand)**: `readThread(s, event.postId)` returns the full `{ post, comments[] }` conversation tree. Use when the signal is ambiguous — e.g., an L5_wtp comment in isolation could be rhetorical ("I'd pay but there's nothing") or real ("I'd pay, already tried XX"). Replies resolve which. Per demand-archaeologist skill: "comment trees — THIS IS WHERE THE GOLD IS."
+
+3. **Forbidden**: loading `docs-all.jsonl` wholesale. A session's docs-all.jsonl ≈ 150K tokens.
+
+Rule: default → thread → never full corpus. If you feel the urge to load all docs, you're missing a tool; say so.
 
 ---
 

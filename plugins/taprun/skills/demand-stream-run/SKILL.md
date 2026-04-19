@@ -75,6 +75,14 @@ Terminate when near.length === 0, or round ≥ 3, or budget ≥ 200 searches.
 
 ---
 
+## Context budget guardrail
+
+**Do not load `docs-all.jsonl` into context during classify.** Events already carry a `snippet` field — a ±8-char window — sufficient for valid/noise judgments. A W-sized docs file is 600 KB ≈ 150K tokens; pulling it into context 5–10×s the session cost.
+
+Classify from `events.jsonl` alone. If a specific event's snippet is genuinely ambiguous, read that one doc by URL (single `Read` call), not the full file.
+
+---
+
 ## Forbidden patterns (2026-04-19 lesson)
 
 Before this skill existed, sessions were driven by `_round1.ts / _round2.ts / _round3.ts / _check.ts` one-offs with inline Python heredocs duplicating `THEMES` and `VALID_CANON`. It was replaced because:

@@ -5,7 +5,7 @@ argument-hint: '[cohort] [platform] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '8.2.0'
+  version: '8.3.0'
 ---
 
 # Demand Archaeologist
@@ -61,7 +61,7 @@ Before weighting a signal, ask three questions:
   3. Does emitting it commit the signaler to anything?   (if yes, weight heavily)
 ```
 
-Information content per signal ≈ cost × irreversibility × public-commitment.
+Information content per signal ≈ cost × irreversibility × decodable × derivative — **see §Information Density Formula below for the operationalized version**.
 
 ### Consumer-side signals ranked by cost (ascending)
 
@@ -136,9 +136,110 @@ Signal quality isn't a single axis. Every signal should be evaluated on all five
 | **D4** | **Irreversibility** — can it be retracted | Reversible / Costly-to-retract / Irreversible | tweet can be deleted vs funding round can't |
 | **D5** | **Dynamics** — temporal structure | Point / Duration / Derivative | one funding event vs sustained star growth vs velocity inflection |
 
-**Signal information content ≈ cost × irreversibility × derivative-awareness**
+**Signal information content ≈ cost × irreversibility × decodable × derivative** — operationalized in §Information Density Formula below.
 
-A high-cost signal that happens frequently (hiring posts) carries less per-event information than a high-cost signal that's irreversible and first-time (Series A). Always combine D2+D4+D5.
+A high-cost signal that happens frequently (hiring posts) carries less per-event information than a high-cost signal that's irreversible and first-time (Series A). Always combine D2+D4+D5 — plus D1-subject-decodability for the fourth term.
+
+---
+
+### Information Density Formula
+
+The four-factor product turns Costly Signaling from a philosophical claim into a computable engineering metric. Each factor is independent. Any factor → 0 means the whole signal → 0 (multiplicative = AND logic, not OR — Liebig's law of the minimum applies).
+
+```
+Info(signal) = cost × irreversibility × decodable × derivative
+             ∈ [0, 1]
+```
+
+#### The four factors unpacked
+
+**1. Cost** — what the sender gave up (time / money / reputation / opportunity / legal commitment). Maps directly to the ★ scale:
+
+| Signal | ★ | Numeric |
+|---|---|---|
+| Upvote / like / tap | ★ | 0.2 |
+| Typed comment with public attribution | ★★ | 0.4 |
+| Technical blog post (hours + reputation) | ★★★ | 0.6 |
+| Open-sourced repo under active maintenance | ★★★★ | 0.8 |
+| Paid SaaS subscription | ★★★★ | 0.8 |
+| Funded round / hire-to-seat / acquisition | ★★★★★ | 1.0 |
+
+**2. Irreversibility** — cost-to-retract vs cost-to-emit. Cascaded across three layers:
+
+| Layer | Question | Example low / high |
+|---|---|---|
+| Physical | Can the artifact be deleted? | Tweet (low) vs shipped product (high) |
+| Social | Even if deleted, is it archived / remembered? | Ephemeral chat (low) vs Wayback-archived blog (high) |
+| Economic | Can the money / commitment be reclaimed? | Cancellable subscription (medium) vs equity issued in funding (high) |
+
+All three layers must resist retraction to score 1.0. **Why it matters**: the pipeline's historical ledger only preserves value if signals don't get undone post-hoc.
+
+**3. Decodable** — can the artifact be parsed into structured data without LLM semantic judgment.
+
+| Tier | Meaning | Examples | Score |
+|---|---|---|---|
+| Fully structured | Fixed schema, stable types, deterministic extraction | GitHub star count, funding amount, JD posted-date, App download curve | 1.0 |
+| Semi-structured | Schema + embedded free text needing light rules | JD responsibilities body, PH launch description, X bio | 0.6 |
+| Free-text requiring LLM | Must semantically interpret | Comment sentiment, tweet intent, implicit WTP from a post | 0.3 |
+
+**Why a separate dimension**: LLM may *contextualize an anomaly after detection* (explaining "why this ∆ happened") — but **LLM must not be in the signal extraction path**, because every LLM pass introduces probabilistic drift (Fact A2) and lossy conversion (Fact R1). A signal that's strong on cost + irreversibility but requires LLM to extract will produce inconsistent pipeline outputs run-over-run.
+
+**4. Derivative** — whether time-series ∆ carries information beyond the absolute state.
+
+| Temporal structure | Meaning | Score |
+|---|---|---|
+| Point event only | Single-timestamp, no history | 0.3 (point event still carries "first-occurrence" derivative) |
+| Duration observable | Artifact persists with lifespan signals | 0.6 |
+| Full derivative-aware | Rate / acceleration computable | 1.0 |
+
+**Why it matters**: absolute values saturate as markets mature (100 GitHub stars = hot in 2015, default background in 2025). Rate of change reveals *new* information. Pipeline output should be "what changed this week", not "what's present now".
+
+#### Why multiplication, not addition
+
+Addition suggests a strong factor can compensate for a weak one. That's wrong for signal selection:
+
+- Signal A: cost = 1.0 (funded round), but decodable = 0 (only mentioned in private VC calls) → uncapturable → useless
+- Signal B: decodable = 1.0 (public API), but cost = 0.1 (like button) → no information → useless
+
+Multiplication captures the **necessary-conjunction** structure. A signal is only as strong as its weakest dimension.
+
+#### Worked examples
+
+| Signal | cost | irrev | decode | deriv | **Product** |
+|---|---|---|---|---|---|
+| Reddit upvote | 0.2 | 0.2 | 1.0 | 0.3 | **0.012** |
+| "I'd pay for this" comment | 0.4 | 0.3 | 0.3 | 0.3 | **0.011** |
+| 小红书 like | 0.2 | 0.2 | 1.0 | 0.3 | **0.012** |
+| Bilibili video view count | 0.2 | 1.0 | 1.0 | 0.6 | **0.12** |
+| Bilibili *creator* publishing velocity | 0.6 | 0.8 | 0.8 | 1.0 | **0.38** |
+| GitHub solo repo + star velocity | 0.7 | 0.8 | 1.0 | 1.0 | **0.56** |
+| ProductHunt launch | 0.8 | 0.9 | 1.0 | 0.8 | **0.58** |
+| LinkedIn hiring JD | 0.8 | 0.9 | 0.9 | 1.0 | **0.65** |
+| Series A funding round | 1.0 | 1.0 | 1.0 | 0.8 | **0.80** |
+| **MicroAcquire listing (broker-verified MRR)** | **1.0** | **1.0** | **1.0** | **1.0** | **1.00** |
+
+The MicroAcquire line is the only entry at full score — it's why §Signal Stacks by Cohort places it as the solo cohort's P0 primary signal.
+
+#### Three decision rules derived from the formula
+
+**Rule 1 — Investment threshold**: only build pipeline infrastructure for signals where `Info ≥ 0.5`. Below that, no aggregation strategy clears the Shannon bound.
+> Intuition: `0.01 × 100 ≈ 0.01` — aggregating cheap signals doesn't synthesize expensive information.
+
+**Rule 2 — Correlated cross-validation**: two independent 0.5 signals firing in the same direction ≈ one 0.8 single signal.
+> Intuition: independent co-occurrence lowers p(both by chance) multiplicatively.
+> Operational: three `Info=0.5` supply-side sources triangulating on the same niche outweighs one isolated `Info=0.8` signal.
+
+**Rule 3 — Shelf-life monitor**: re-audit all four factors per signal source every 6–12 months. Any factor degrading > 30% triggers re-evaluation of signal weight.
+> The 2023+ AI-coding-agent shift is a live example — solo-repo `cost` dropped from ~0.8 → ~0.6, so `Info` dropped from ~0.56 → ~0.42, pushing that signal below Rule 1's threshold for solo-specific pipelines.
+
+#### What the formula excludes
+
+The formula does not capture:
+- **Relevance to your cohort** — handled separately by Criterion 6 (User-constraint alignment)
+- **Timing value** — lead time vs lag time is a decision-value concept, not an info-content concept
+- **Interpretive effort** — even a 1.0-Info signal still needs the analyst to ask "what should I do?" — that's Phase 2.5+, not Phase 2
+
+Info density ranks which signals are *worth collecting*. Cohort alignment ranks which signals are *worth acting on for you*. Both filters must pass.
 
 ---
 

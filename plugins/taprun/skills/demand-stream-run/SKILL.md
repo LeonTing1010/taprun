@@ -25,7 +25,7 @@ Weekly demand-mining session over `~/.tap/demand-archive/stream/`. Agent-driven 
 ## The three verbs (from `~/.tap/demand-archive/stream/agent-tools.ts`)
 
 ```ts
-import { openSession, sweep, classify, state } from "./agent-tools.ts";
+import { openSession, sweep, classify, flushToLedger, state } from "./agent-tools.ts";
 import { expansionQueries, SWEEP_QUERIES, type Query } from "./search.ts";
 import { runSeed } from "./seed.ts";
 
@@ -36,9 +36,10 @@ const s = openSession("2026-W<NN>");
 |---|---|---|
 | `sweep(queries, session, round)` | Fetches + dedupes + appends docs, detects new events, appends to `events.jsonl` via `eventKey` | Each round — initial sweep + each expansion |
 | `classify(rules, session?)` | Appends to global `classifications.jsonl` ledger, upserts theme assignments in global `themes.json` | After each sweep, for each new `(canonical, pattern_label)` seen |
-| `state(session)` | Returns `{ complete, near, far, abandoned }` clusters with gate results | Before deciding what to expand; at end of session |
+| `flushToLedger(session)` | Persists newly valid demand events to global `event-ledger.jsonl` for cross-week accumulation | Immediately after every `classify()` call |
+| `state(session, { lookback_weeks? })` | Returns `{ complete, near, far, abandoned }` clusters; merges prior-week ledger events when `lookback_weeks > 0` | Before deciding what to expand; at end of session |
 
-**The global registries (`themes.json`, `classifications.jsonl`) carry across weeks.** Prior sessions' judgments auto-apply to matching canonicals — you only classify *new* `(canonical, pattern_label)` pairs.
+**The global registries (`themes.json`, `classifications.jsonl`, `event-ledger.jsonl`) carry across weeks.** Prior sessions' judgments auto-apply to matching canonicals — you only classify *new* `(canonical, pattern_label)` pairs. Slow-building themes (< 5 events/week) surface via ledger accumulation across weeks.
 
 ---
 
@@ -48,15 +49,18 @@ const s = openSession("2026-W<NN>");
 Round 0 + 1: runSeed(0) + sweep(SWEEP_QUERIES wrapped as {platform:"sweep", …})
            ↓
 Classify new (canonical, pattern_label) pairs — batch one classify() call
+flushToLedger(s)                              ← persist valid events to global ledger
            ↓
-state() → read {complete, near, far}
+state(s, { lookback_weeks: 3 })               ← merges up to 3 prior weeks from ledger
+→ read {complete, near, far}
            ↓
 For each near cluster (up to 3 rounds):
   qs = expansionQueries(cluster)      ← deterministic default
   review qs → override if display is regex debris
   sweep(qs, s, round)
   classify new rules
-  state()
+  flushToLedger(s)
+  state(s, { lookback_weeks: 3 })
            ↓
 Terminate when near.length === 0, or round ≥ 3, or budget ≥ 200 searches.
 ```
@@ -77,9 +81,9 @@ Terminate when near.length === 0, or round ≥ 3, or budget ≥ 200 searches.
 
 ## Context budget guardrail
 
-**Do not load `docs-all.jsonl` into context during classify.** Events already carry a `snippet` field — a ±8-char window — sufficient for valid/noise judgments. A W-sized docs file is 600 KB ≈ 150K tokens; pulling it into context 5–10×s the session cost.
+**Do not load `docs-all.jsonl` into context during classify.** Events carry `snippet` (±chars of match context), `parent_title`, and `parent_body_head` (first 150 chars of body) — sufficient for valid/noise and theme judgments. A session's `docs-all.jsonl` can exceed 600 KB ≈ 150K tokens; pulling it into context 5–10×s the session cost.
 
-Classify from `events.jsonl` alone. If a specific event's snippet is genuinely ambiguous, read that one doc by URL (single `Read` call), not the full file.
+Classify from `events.jsonl` alone. If a specific event is genuinely ambiguous even with `parent_title` + `parent_body_head`, read that one doc by URL (single `Read` call), not the full file.
 
 ---
 

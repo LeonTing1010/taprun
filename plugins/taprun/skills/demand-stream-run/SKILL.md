@@ -108,6 +108,17 @@ When the loop terminates:
 
 ---
 
+## Seed maintenance (not a session task — but know these exist)
+
+Two offline CLIs under `~/.tap/demand-archive/stream/`:
+
+- `seed-probe.ts [<venue> | --all]` — single-venue end-to-end smoke test (collect→detect). Use when adding a candidate venue, debugging 0-event sessions, or quarterly.
+- `seed-audit.ts` — aggregates `sessions/*/final.json` to produce per-venue `complete_hits` / `weeks_seen` with drop/promote recommendations. Run quarterly once ≥10 weeks of data exist.
+
+Neither needs you (the agent) — they're pure CLI. Mention them to the user if seeds look stale or venues look empty. Do NOT rewrite `seed.ts` without a probe-plus-audit recommendation.
+
+---
+
 ## Cross-references
 
 - Authoritative procedure: `~/.tap/demand-archive/stream/PLAYBOOK.md`

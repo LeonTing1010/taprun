@@ -5,7 +5,7 @@ argument-hint: '[platform] [audience] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '8.0.0'
+  version: '8.1.0'
 ---
 
 # Demand Archaeologist
@@ -103,6 +103,141 @@ This is why Phase 2.5 Competitive Teardown is non-optional and why Phase 2 must 
 ### Why attention platforms fail the same way
 
 Social recommender algorithms optimize watch-time × engagement — cheap signals at scale. Goodhart's Law guarantees attention decouples from value as optimization pressure grows. Our pipeline faces the same risk: pattern-match-count decouples from real demand once we optimize for it. The fix in both domains is identical — **switch the fitness function to costly signals**.
+
+---
+
+## Signal Framework — Evaluation Criteria for What to Track
+
+Costly Signaling tells us *why* some signals are better than others. This section operationalizes it: what counts as a signal, how to rank signals, why they evolve, and which ones deserve pipeline investment.
+
+### Definition
+
+> **Signal = an observable artifact that the sender paid to emit, revealing an internal state we cannot observe directly.**
+
+Four necessary properties:
+1. **Observable** — externally detectable
+2. **Costly** — emission consumed the sender's resource (time / money / reputation)
+3. **Timestamped** — happens at a specific point or duration
+4. **Decodable** — we have rules mapping artifact → state
+
+**Signal ≠ Data**. Raw data is a *signal candidate*. It becomes a signal only when it passes the cost threshold AND has decoding rules AND has context.
+
+---
+
+### The Five Dimensions of Signal Hierarchy
+
+Signal quality isn't a single axis. Every signal should be evaluated on all five dimensions:
+
+| Dim | Axis | Values | Example contrast |
+|---|---|---|---|
+| **D1** | **Subject** — what is being signaled | Existence / Quality / Volume / Direction / Termination | "repo exists" vs "repo dying" vs "repo pivoting" |
+| **D2** | **Cost** — emission cost | ★ ~ ★★★★★ | like (★) vs funding round (★★★★★) |
+| **D3** | **Emitter** — who signals | User / Creator / Capital / Platform / Regulator | user complaint vs VC investment |
+| **D4** | **Irreversibility** — can it be retracted | Reversible / Costly-to-retract / Irreversible | tweet can be deleted vs funding round can't |
+| **D5** | **Dynamics** — temporal structure | Point / Duration / Derivative | one funding event vs sustained star growth vs velocity inflection |
+
+**Signal information content ≈ cost × irreversibility × derivative-awareness**
+
+A high-cost signal that happens frequently (hiring posts) carries less per-event information than a high-cost signal that's irreversible and first-time (Series A). Always combine D2+D4+D5.
+
+---
+
+### Why Signals Evolve
+
+Signals are not a static taxonomy. They drift and must be re-evaluated periodically.
+
+| Driver | Mechanism | Example |
+|---|---|---|
+| **Substrate change** | New platforms create new signal types; old platforms die | ProductHunt didn't exist before 2013; Pushshift died 2023 |
+| **Cost structure shift** | What was costly becomes cheap → info content decays | 2015: tech blog post = hours of work (★★★); 2025: AI-written = near-zero (★) |
+| **Goodhart pressure** | Once a signal is tracked, emitters game it | GitHub stars strong in 2015; star-buying services exist now → weakened |
+| **Market maturation** | Early market: sparse but heavy signals; mature: dense but table-stakes | First repo in a category matters; Nth repo in a mature category is noise |
+| **Observability shift** | APIs open/close, tooling changes what's collectable | Twitter API lockdown 2023; Tap Chrome extension unlocks logged-in data |
+| **Social convention** | What's normative to signal changes | "Build in public" became a norm ~2019 — new signal class emerged |
+
+**Implication**: every signal source needs a *shelf-life review*. A source that worked last year may be noise this year.
+
+---
+
+### Five Go/No-Go Criteria for Pipeline Investment
+
+Before building a collection path for any signal source, run it through all five:
+
+| # | Criterion | Pass condition |
+|---|---|---|
+| **1** | **Cost floor** | Signal emission cost ≥ ★★★. Anything cheaper gets drowned by the Shannon bound — no aggregation strategy recovers. |
+| **2** | **Irreversibility** | Cost-to-retract > cost-to-emit. Otherwise post-hoc retraction corrupts the historical ledger. |
+| **3** | **Machine-decodable** | Structurable without LLM semantic judgment — funding amount, star count, JD existence, launch timestamp. LLM may *contextualize* the anomaly later, but extraction must be deterministic. |
+| **4** | **Tap-reachable & read-safe** | See sub-conditions below. |
+| **5** | **Derivative meaningful** | Time-series ∆ has interpretive value beyond the absolute state. |
+
+**Criterion 4 unpacked** — the correct framing isn't "publicly observable", it's "can tap collect it sustainably":
+
+| Sub-condition | Meaning |
+|---|---|
+| Single-account sufficient | One logged-in account covers full data; no need for account farms |
+| Read-only is not bannable | Collection is browsing-like; no write actions means no rate-limit / account-risk |
+| Bot-detection penetrable | Tap Chrome extension runtime looks natural to target site; extreme defenses (Cloudflare+Kasada+DataDome stacks) are out of scope |
+
+**Logged-in data is first-class, not a workaround.** Tap Chrome bridge reuses the user's natural session, making authenticated sources (LinkedIn / Crunchbase / Twitter-X / 知乎) as viable as anonymous ones.
+
+### The expanded source landscape Criterion 4 unlocks
+
+| Source | Primary signal type | Access | Information weight |
+|---|---|---|---|
+| **LinkedIn** | Hiring JDs / company headcount / employee flow | Logged-in | ★★★★ |
+| **Crunchbase** | Funding rounds / valuation / investor lineage | Logged-in (paid tier richer) | ★★★★★ |
+| **Twitter/X** | Founder launch threads / VC announcements / hiring tweets | Logged-in (anon severely rate-limited) | ★★★★ |
+| **ProductHunt** | Launches + upvote distribution + critique comments | Anonymous OK / logged-in fuller | ★★★★ |
+| **GitHub** | Repos / star velocity / commit freshness / issue themes | Anonymous OK | ★★★★ |
+| **Sensor Tower / Similarweb** | App download curves / traffic shifts | Logged-in paid | ★★★★★ |
+| **知乎 Live / 盐选** | Author time-investment in paid content | Logged-in | ★★★ |
+| **V2EX /create node** | Indie dev launches | Logged-in more stable | ★★★ |
+| **Bilibili / YouTube creator metadata** | Creator count × publishing velocity on topic | Anonymous / logged-in | ★★★ |
+
+Hard exclusions (still not viable even with Tap Chrome):
+- Closed SaaS back-ends (Stripe dashboards / Mixpanel)
+- Private invite-only communities (Slack / Discord internal)
+- Non-web channels (phone / email / newsletter content)
+- Extreme anti-bot stacks that specifically detect real Chrome extensions
+- Write actions (post / DM / follow) — these are not signal collection, and they risk account ban
+
+---
+
+### The Eight ∆ Events Worth Tracking
+
+The pipeline output should be **state transitions (∆), not state snapshots**. A static list of "repos in the category" tells you less than "repos that appeared this week". Below is the priority stack.
+
+| Priority | ∆ Event | Mechanism | Primary indicator |
+|---|---|---|---|
+| **P0** | **Incumbent failure** | Dominant competitor dies → timing window opens | 404 / last-commit > 180d / negative review burst / shutdown announcement |
+| **P0** | **Category birth** | First-time co-occurrence of multiple independent emitters in a new niche | 3+ new repos same topic / 2+ PH launches 90d / JD mentions same role at multiple companies within 30d |
+| **P1** | **Capital crystallization** | Multiple VCs betting on same thesis | ≥3 funding rounds same thesis within 90d |
+| **P1** | **Infrastructure enablement** | New tech makes a category newly viable | New API / new model class / new protocol release |
+| **P1** | **Talent liquidity** | Hiring density surge for a niche | LinkedIn/YC JD keyword density ∆ > 3× |
+| **P2** | **Category acceleration** | Known category velocity inflection | Star-growth 2nd derivative > 0, sustained over 4+ weeks |
+| **P2** | **Policy window** | Platform/regulatory rule change opens lane | API policy change / subsidy announcement / regulatory ban |
+| **P3** | **Pricing collapse** | Category becomes viable at new price tier | Free → paid / paid → free / new tier announcement |
+
+**These are the detector targets for a supply-side-first pipeline.** Not pattern matching on demand-expression text — structured event detection on observable artifacts.
+
+---
+
+### What NOT to Track (Explicit Delete List)
+
+Things that look like signals but fail one or more criteria:
+
+| Source | Fails on | Why |
+|---|---|---|
+| "有没有 X" / "looking for X" comments | #1 Cost floor | ★★ cheap talk, aggregation ceiling is Shannon bound |
+| 小红书 / 知乎 topic trending | #1 Cost floor | Attention signal, decoupled from value |
+| Reddit upvote / comment counts | #1, #2 | Cheap + reversible |
+| Bilibili video view counts | #1 | Consumption, not investment (creator *publishing* is the signal; viewer *watching* is not) |
+| App Store star ratings (aggregate) | #5 Derivative | Absolute scores are sticky and noisy; only review *burst* / 1-star *spike* is signal |
+| Google Trends | #1, #2 | Search volume is intent, not commitment |
+| Sentiment scores | #2, #3 | LLM-scored sentiment is labile; even paid users complain |
+
+**Key nuance**: the same platform can produce both valid supply signals and noise. Bilibili creator publishing velocity is ★★★; Bilibili viewer counts are ★. Never whitelist a platform — always whitelist a specific signal type on that platform.
 
 ---
 

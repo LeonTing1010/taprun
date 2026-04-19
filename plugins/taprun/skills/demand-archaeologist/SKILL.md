@@ -1,11 +1,11 @@
 ---
 name: demand-archaeologist
-description: Evidence-based demand discovery and product-idea validation, grounded in the Costly Signaling Law (Zahavi/Spence). Find what's worth building by weighting signals by emission cost — workarounds, failed alternatives, paid purchases, open-source artifacts, funded competitors — NOT by counting cheap signals like likes or comments. Covers three signal fronts: (1) demand-side consumer comments on Reddit/HN/indie hackers via Tap MCP Reddit taps + Chinese social (小红书/知乎/v2ex) via browser taps, (2) supply-side investment signals via GitHub/ProductHunt/hiring/funding data, (3) creator-bet signals via video platform taps (Bilibili/YouTube). Use when users want to find product ideas, validate an existing idea, discover unmet needs, research a market, or decide what to build next. TRIGGER on "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
-argument-hint: '[platform] [audience] [constraints]'
+description: Evidence-based demand discovery and product-idea validation, grounded in the Costly Signaling Law (Zahavi/Spence) with cohort-aware signal selection. Find what's worth building by weighting signals by emission cost AND by your resource constraints — solo founders track MicroAcquire/IH MRR while funded startups track hiring/funding. Covers three signal fronts (consumer comments / supply-side investment / creator-bet) across three user cohorts (solo AI-augmented / funded startup / enterprise). Use when users want to find product ideas, validate an existing idea, discover unmet needs, research a market, or decide what to build next. TRIGGER on "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
+argument-hint: '[cohort] [platform] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '8.1.0'
+  version: '8.2.0'
 ---
 
 # Demand Archaeologist
@@ -157,9 +157,19 @@ Signals are not a static taxonomy. They drift and must be re-evaluated periodica
 
 **Implication**: every signal source needs a *shelf-life review*. A source that worked last year may be noise this year.
 
+#### Live example — the 2023+ AI coding agent shift
+
+AI coding agents (Claude Code, Cursor, Devin, Aider) dropped solo-developer velocity by 5–10×. This single cost-structure shift cascades through the signal taxonomy:
+
+- **"Single-author GitHub repo with 1000 stars"** was ★★★★ pre-2023. Now ★★★ — emission cost (build weeks) dropped significantly. Weight accordingly.
+- **"Company is hiring 5 engineers for niche X"** was the densest *supply-side execution* signal. Now it's a **biased sample** — it only catches the cohort that still needs teams. The AI-augmented solo cohort shipping the same niche is **invisible** to hiring-delta pipelines.
+- **"MicroAcquire / Acquire.com listings with broker-verified MRR"** went from rare curiosity to **first-class signal class** — because "solo-viable SaaS you can build + sell" went from edge case to dominant pattern.
+
+The framework *predicts* this drift via Driver #2 (cost structure shift). Operationally this means: **re-audit your signal weights every 6–12 months, and more aggressively when you see a cost-structure discontinuity**.
+
 ---
 
-### Five Go/No-Go Criteria for Pipeline Investment
+### Six Go/No-Go Criteria for Pipeline Investment
 
 Before building a collection path for any signal source, run it through all five:
 
@@ -170,6 +180,7 @@ Before building a collection path for any signal source, run it through all five
 | **3** | **Machine-decodable** | Structurable without LLM semantic judgment — funding amount, star count, JD existence, launch timestamp. LLM may *contextualize* the anomaly later, but extraction must be deterministic. |
 | **4** | **Tap-reachable & read-safe** | See sub-conditions below. |
 | **5** | **Derivative meaningful** | Time-series ∆ has interpretive value beyond the absolute state. |
+| **6** | **User-constraint alignment** | Signal points at opportunities **your cohort can actually enter**. Same source ≠ same signal across cohorts — see cohort table below. |
 
 **Criterion 4 unpacked** — the correct framing isn't "publicly observable", it's "can tap collect it sustainably":
 
@@ -180,6 +191,21 @@ Before building a collection path for any signal source, run it through all five
 | Bot-detection penetrable | Tap Chrome extension runtime looks natural to target site; extreme defenses (Cloudflare+Kasada+DataDome stacks) are out of scope |
 
 **Logged-in data is first-class, not a workaround.** Tap Chrome bridge reuses the user's natural session, making authenticated sources (LinkedIn / Crunchbase / Twitter-X / 知乎) as viable as anonymous ones.
+
+**Criterion 6 unpacked** — a signal's relevance is conditional on the user's resource constraints and market position. The same source can be *primary signal* for one cohort and *exclusion filter* for another. Pipelines must declare their target cohort before the first sweep; "signal information content" is necessary but not sufficient.
+
+| Cohort | Constraint profile | Primary signals | Exclusion signals |
+|---|---|---|---|
+| **Solo / bootstrapped (AI-augmented)** | 1 person + AI agents, small capital, 3–12 month horizon | MicroAcquire / Acquire.com / Flippa listings (verified MRR) · Indie Hackers public MRR · Gumroad / Lemon Squeezy product catalogs · solo-author active GitHub repos with commercial landing | Heavy VC-backed hiring in same niche (means solo can't win head-on — pivot to adjacent niche or lighter form factor) · funding rounds > $5M in the niche (capital gap is now the moat) |
+| **Funded startup (Seed → Series A)** | Team of 3–15, VC capital, 18–36 month horizon | Hiring surges · Series A announcements · ProductHunt launches by similar-stage companies · category birth (co-occurrence of multiple team-backed bets) | Already saturated categories with 3+ funded Series B competitors (too late) |
+| **Enterprise buyer / acquirer** | Large org, procurement or M&A mandate | Product maturity (release cadence · customer logos · case studies) · acquisition listings at scale | Early-stage products without traction · solo-operated SaaS below procurement threshold |
+
+**Same funding round data**:
+- To solo founder: "well-capitalized competitor entered — exit this niche"
+- To funded startup: "market crystallizing — race for position"
+- To enterprise: "potential acquisition target forming"
+
+Different interpretation, same raw data. Running one pipeline for all three = signal dilution. **Declare your cohort first.**
 
 ### The expanded source landscape Criterion 4 unlocks
 
@@ -221,6 +247,63 @@ The pipeline output should be **state transitions (∆), not state snapshots**. 
 
 **These are the detector targets for a supply-side-first pipeline.** Not pattern matching on demand-expression text — structured event detection on observable artifacts.
 
+**But priority reordering depends on cohort** (Criterion 6). The P0–P3 ordering above is cohort-neutral — in practice one cohort's P0 is another cohort's noise.
+
+---
+
+### Signal Stacks by Cohort
+
+Apply Criterion 6 first: declare your cohort, then use the right priority stack.
+
+#### Solo / bootstrapped (AI-augmented) — 2023+ cost structure
+
+```
+Primary signal (retrospective validation — already-proven niches):
+  ★★★★★  MicroAcquire / Acquire.com / Flippa SaaS listings with broker-verified MRR
+          → each listing compresses: niche + WTP + scale + solo-time-to-build + market multiple
+          → bought business is the strongest possible proof that (a) demand real, (b) solo can execute, (c) money clears
+
+Primary signal (active cohort — currently running businesses):
+  ★★★★   Indie Hackers public MRR pages (reputation-backed self-report)
+  ★★★★   Gumroad / Lemon Squeezy / Polar product catalogs with sales signals
+
+Cross-validation when primary fires:
+  ★★★    Solo-author GitHub repos in niche with commercial landing pages
+  ★★★    Build-in-public X threads with 3+ months continuous history
+  ★★★    ProductHunt launches in niche with commercial uptake
+
+Exclusion filter (reverses opportunity signal):
+  ★★★★   LinkedIn hiring surge by VC-backed companies in same niche → stay out or pivot adjacent
+  ★★★★★  Crunchbase rounds > $5M in exact niche → capital gap is now the moat
+
+Best ∆ event match: pricing collapse + category birth among solo builders.
+Hiring surge from P0 demotes to exclusion signal.
+```
+
+#### Funded startup (Seed → Series A)
+
+The pre-AI framework defaults apply — team-building *is* the execution bet.
+
+```
+Primary signals:
+  Hiring surges · funding announcements · category crystallization
+  (the original P0–P1 list top-to-bottom)
+
+Exclusion: already-saturated categories with 3+ funded Series B competitors
+```
+
+#### Enterprise buyer / acquirer
+
+```
+Primary signals:
+  Product maturity (release cadence, customer logos, case studies, integration ecosystem)
+  Acquisition listings at institutional scale
+
+Irreversibility and operating longevity dominate over novelty.
+```
+
+**The architectural implication**: running one undifferentiated pipeline for all three cohorts produces diluted output. Ship three thin cohort-specific pipelines instead of one generic one, or parameterize a single pipeline with `cohort=` at config time.
+
 ---
 
 ### What NOT to Track (Explicit Delete List)
@@ -238,6 +321,17 @@ Things that look like signals but fail one or more criteria:
 | Sentiment scores | #2, #3 | LLM-scored sentiment is labile; even paid users complain |
 
 **Key nuance**: the same platform can produce both valid supply signals and noise. Bilibili creator publishing velocity is ★★★; Bilibili viewer counts are ★. Never whitelist a platform — always whitelist a specific signal type on that platform.
+
+**Additional cohort-mismatch category** (Criterion 6 failure — these are *high-quality signals for the wrong cohort*, not noise):
+
+| Signal | Noise for | Still valid for |
+|---|---|---|
+| LinkedIn hiring surge in niche | Solo founders (use as exclusion filter) | Funded startups (primary signal) |
+| Crunchbase Series A rounds | Solo founders (exclusion) | Funded startups + acquirers |
+| MicroAcquire sub-$100K listings | Enterprise buyers (below procurement threshold) | Solo founders (primary) |
+| Customer logos / case studies | Solo founders (irrelevant at their scale) | Enterprise buyers (primary) |
+
+Don't delete these from your collection fleet — route them to the right cohort's pipeline.
 
 ---
 

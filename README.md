@@ -1,8 +1,8 @@
 # taprun
 
-Private Claude Code plugin marketplace for Leo's engineering methodology skills.
+Public Claude Code skills marketplace (MIT). First-principles engineering methodology — demand archaeology, verification gates, plan writing, semi-autonomous task execution.
 
-This repository is a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins) containing a single plugin (`taprun`) with skills derived from first principles. All skills are namespaced under `/taprun:` in Claude Code sessions.
+This repository is a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins) containing a single plugin (`taprun`) with 8 skills derived from first principles. All skills are namespaced under `/taprun:` in Claude Code sessions.
 
 ## Skills
 

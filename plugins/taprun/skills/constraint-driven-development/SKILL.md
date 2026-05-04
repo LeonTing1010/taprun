@@ -123,11 +123,39 @@ class TestPricingInvariants:
 func TestPricing_TotalEqualsSum(t *testing.T) { ... }
 ```
 
-### Test type decision tree
+### Verification ladder — strongest layer first (mandatory)
+
+**Before writing any test, ask: can the type system enforce this?** Tests are weaker than types — they fire at run time, not edit time, and they cover only the inputs the author thought to write. Types fire at every keystroke, on every input, and cannot be bypassed without a deliberate cast.
+
+The ladder, strongest to weakest:
+
+| Layer | Method | Feedback time | Strength | Bypass cost |
+|---|---|---|---|---|
+| **L1 Type system** | branded types, readonly, discriminated unions, opaque types, never-typed absences | edit time | strongest | requires `as X` cast (visible in diff) |
+| **L2 Property test** | `∀ input, property P holds` | save / commit | strong | impossible to satisfy with a wrong impl that handles the random space |
+| **L3 Behavioral test** | input → output specific cases | save / commit | medium | half-impl can pass with hardcoded return |
+| **L4 Architecture / lint / grep** | structural checks on source text | commit | weak | trivial to obfuscate around |
+| **L5 Documentation** | English sentence in CLAUDE.md / ADR | none | weakest | depends on memory |
+
+**Rule 1.** If a stronger layer can express the constraint, the weaker layer is redundant — delete it. Example: "only `materializeRun()` may produce `Run` instances" is L4 (grep for object literals) but is also L1 (`Run` is a branded type; only the helper can forge the brand). Choose L1 and drop the L4 grep.
+
+**Rule 2.** Use type-system idioms idiomatically:
+- **Branded / opaque types** for "only this constructor may produce" (e.g. `Run`, `Identifier`, `Validated<T>`)
+- **`readonly` fields** for "no mutation outside this module" (replaces grep on `\.field\s*=`)
+- **`never`-typed absences** in discriminated unions for "this variant must not have field X" (replaces grep)
+- **Phantom type parameters** for "this value carries proof X holds"
+- **Const assertions** + `as const` for "this string is one of a finite set"
+
+**Rule 3.** When you DO need L4 (grep), narrow it to the single residual surface the type system can't cover. For branded types this is usually `as <Brand>` casts in non-constructor modules — a 1-line guard, not a "no literals anywhere" guard.
+
+### Test type decision tree (after L1 is exhausted)
 
 ```
+Type system can encode this? (branded type, readonly, discriminated union)
+  → No test needed. Edit-time enforcement.
+
 Can express as "∀ input, property P holds"?
-  → Property test (strongest — covers infinite inputs)
+  → Property test (strongest dynamic check — covers infinite inputs)
 
 Describes input → output behavior?
   → Behavioral test (no internal mocking — test the API surface)

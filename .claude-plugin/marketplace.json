@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "taprun",
-      "description": "Engineering methodology skills derived from first principles: verify (deterministic verification gates), constraint-driven-development (RED→GREEN→Why), engineering-philosophy (12-fact framework for architecture and product tradeoffs), writing-plans (intent-verification decomposition), run-task (semi-autonomous task execution), demand-archaeologist (evidence-based demand discovery).",
+      "description": "Engineering methodology skills derived from first principles: verify (deterministic verification gates), constraint-driven-development (RED→GREEN→Why), engineering-philosophy (12-fact framework for architecture and product tradeoffs), writing-plans (intent-verification decomposition), writing-adrs (ADR discipline — 6 principles + pre-commit checklist, language-agnostic), run-task (semi-autonomous task execution), demand-archaeologist (evidence-based demand discovery).",
       "source": "./plugins/taprun",
       "category": "development",
       "author": {

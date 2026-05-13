@@ -307,6 +307,31 @@ Cross-domain interactions are the most dangerous blind spot — a single rule ca
 
 ---
 
+## Phase 6: Abstraction review (mandatory at every 3rd similar slice)
+
+**CDD's rhythm of "one constraint at a time" suppresses the reflex to refactor when you see the third copy of a pattern.** Apply this trigger as a hard rule:
+
+> **Every time you write a 3rd similar function / file / dispatch case in the same module, stop and run a 5-minute abstraction review.**
+
+Procedure:
+
+1. **Name the structural commonality**. Strip domain terms: what's the shared shape? Often it's a 4-line skeleton like "read input → compute output → resolve path → write iff different".
+2. **Search for the existing pattern** (B3 structural isomorphism). Is this the **Service Installer** / **Driver** / **Strategy** / **Visitor** pattern? It almost always is.
+3. **Compute the deletion delta**. Drafted-as-3-functions: total LOC X, with ~70% boilerplate. Drafted-as-1-interface-+-3-records: total LOC Y. If Y < 0.7 × X, refactor.
+4. **Apply Step ②**: if you refactor, the deletion criterion says you must NOT need to add back ≥10% of what you deleted. Cross-check.
+
+**Worked failure mode this prevents** (real session, 2026-05-13):
+- Slice 2a wrote `writeLaunchAgentPlist` (~80 LOC)
+- Slice 2b wrote `writeSystemdUserService` (~85 LOC)
+- Slice 2c wrote `detectChromeSandbox` (~60 LOC)
+- Slice 2d wrote `activateService` (~140 LOC)
+- All five share the same skeleton (read opts → compute string → resolve path → write/exec idempotently). 
+- The right move was to stop after Slice 2b and extract a `ServiceInstaller` interface + 3 records, saving ~150 LOC and making Windows support a single new record. Instead, by the time Slice 2d landed, deduplicating was a separate refactor that never happened.
+
+**Why this is its own phase, not a Phase 2 sub-step**: GREEN minimum-implementation pushes you to make ONE thing pass. The pattern only becomes visible after the 3rd repetition; embedding the check in Phase 2 would be premature most of the time. Phase 6 fires only when the signal is real.
+
+---
+
 ## Phase 7: Post-mortem (mandatory when a claimed-done feature breaks in real use)
 
 If a real user or integration catches a bug in a feature that previously passed CDD, **treat the test suite itself as the root cause, not just the code**. The code bug is symptomatic; the deeper bug is that the constraints failed to describe reality.
@@ -331,23 +356,47 @@ Post-mortem is the layer that makes CDD *evolve*. Without it, the test suite fre
 
 ```
 Phase 0   scope analysis (skip if single-module, well-tested)
+          + cross-repo: list all peer repos that consume the surface you're touching
 Phase 1   RED     — write failing test
+                    BEFORE the test, ask: "can the type system enforce this?"
+                    If yes, skip the test entirely (L1 > L2)
 Phase 1a ADVERSARIAL — write the "half-implementation shortcut" sentence
                       reject affirmative / mirrored / self-fulfilling tests
 Phase 2   GREEN   — minimum implementation
 Phase 3   Why     — business reason + audit date
-Phase 4   Verify  — typecheck, lint, tests, architecture
+Phase 4   Verify  — typecheck, lint, tests, architecture (editing repo)
+                    + cross-repo: peer-repo testsuites + grep gate when applicable
 Phase 4b  SHOW    — stdin/stdout, curl, screenshot, or data diff
                     "I ran X and observed Y" > "tests pass"
 Phase 5   Cross   — cross-domain interaction check (if 2+ modules)
+Phase 6   Abstraction review (triggered at every 3rd similar slice in the same file)
+          name shared shape → search known pattern → compute delete delta → maybe refactor
 Phase 7   Post-mortem (triggered when real-world failure bypasses the suite)
           new RED → audit why original missed → fix → generalize
 ```
 
-The three failure modes CDD v3 rejects by construction:
+The five failure modes CDD v4 rejects by construction:
 - *Claim too soon* — blocked by Phase 1a (adversarial sentence)
 - *Claim without demo* — blocked by Phase 4b (SHOW)
+- *Claim without cross-repo verify* — blocked by Phase 4 (peer-repo gate + grep)
+- *Claim with hidden duplication* — blocked by Phase 6 (3rd-repetition abstraction review)
 - *Claim without learning* — blocked by Phase 7 (post-mortem as first-class phase)
+
+### L1-before-test reflex (Phase 1 strengthening)
+
+Before writing ANY test, ask: **"is there a way for this invariant to be unrepresentable in the type system, generated from a single source, or derived at build time?"**
+
+Concrete examples where L1 beats L2:
+
+| Tempting test | Better answer |
+|---|---|
+| "Constant X must equal derivation of file Y" | Generate X from Y at build time. Drift is unrepresentable; no test needed. |
+| "Field F never appears outside module M" | Brand the type so only M can construct it. `as F` casts become the only escape — grep for those, not for F. |
+| "Function returns one of N values" | Make the return type `"a" | "b" | "c"`. Exhaustiveness checking catches missing branches. |
+| "Field X requires field Y" | Discriminated union with `Y?: never` on the variant that lacks X. |
+| "Modules A and B agree on a shape" | Export the type from one; import in the other. `ReturnType<typeof f>` for derived shapes. |
+
+**Real failure case (2026-05-13)**: a hand-maintained `EXTENSION_ID_PINNED` constant was kept in sync with a separate `manifest.json` `"key"` field via a unit test (L2). The right answer was a 20-line `scripts/gen-extension-id.ts` that read `manifest.json` at build time and emitted the constant. The test would have been deleted; drift would have been unrepresentable.
 
 ---
 

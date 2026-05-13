@@ -235,6 +235,47 @@ tests        — all existing + new tests pass
 architecture — import boundaries, conventions
 ```
 
+### Phase 4 — Cross-repo verify scope (mandatory when applicable)
+
+**If the change touches any of these published surfaces, Phase 4 MUST also run verify in every repo that consumes them:**
+
+| Touched surface | Cross-repo verify required |
+|---|---|
+| CLI command added / renamed / **deleted** | every repo that names the command in docs, popups, scripts, or shell-outs |
+| Public manifest schema field (browser extension, npm package, etc.) | every repo that reads / writes / validates the field |
+| Wire-protocol field name (HTTP API, MCP tool, JSON shape) | every repo that produces or parses it |
+| File path or env var that's part of the install contract | every repo that documents or expects the path |
+| Build artifact name or location | every consuming pipeline |
+
+**Concrete failure mode this prevents**: a change deletes user-facing CLI verb `foo bar`; the editing repo's tests still pass because they don't grep for the string. A peer repo's popup HTML still cites the deleted verb. Users hit broken instructions. (This exact failure cost a real session 2 silent regressions and 1 Phase-7 cycle.)
+
+**Implementation**: prefer a workspace-level verify script that the editing repo's local gate ALSO invokes — not a CI-only check. Example layout:
+
+```
+workspace_root/
+├── core/             ← per-repo verify: tests + typecheck
+├── public/           ← per-repo verify: tests + typecheck
+└── verify.sh         ← invokes both + a cross-repo grep gate for
+                       deleted/renamed CLI symbols vs peer-repo references
+```
+
+When you can't easily add a workspace gate, fall back to **manual grep at every slice boundary**: `git diff HEAD~1 -- <editing-repo>/<cli-surface-file> | grep -oE '<symbol-pattern>' | uniq | xargs -I{} grep -rn '{}' <peer-repos>/`. Document the grep in the commit message so future contributors know to repeat it.
+
+### Phase 4 — Verify pyramid before declaring done
+
+Run gates strongest-to-weakest. If any earlier gate fails, fix and re-run from the failed gate forward — don't skip ahead.
+
+```
+1. typecheck (L1)        — no type errors
+2. unit / property tests — local-repo's testsuite, all green
+3. architecture tests    — L4 grep gates on the editing repo
+4. cross-repo grep       — when applicable per the table above
+5. peer-repo testsuite   — when applicable per the table above
+6. demo (Phase 4b)       — operational behavior matches the claim
+```
+
+A green editing-repo testsuite is NOT sufficient when steps 4 and 5 are applicable. Skipping them is the canonical "claim too soon" failure (Phase 1a category).
+
 ---
 
 ## Phase 4b: SHOW (demo-before-done, mandatory)

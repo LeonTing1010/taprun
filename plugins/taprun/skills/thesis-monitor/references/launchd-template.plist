@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  thesis-monitor launchd template (macOS)
+
+  Filename convention: com.<you>.tap-kb.scan-<lane>-<slot>.plist
+    e.g. com.leo.tap-kb.scan-redflag-am.plist
+
+  Path: ~/Library/LaunchAgents/<filename>
+
+  Bootstrap:
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.you.tap-kb.scan-redflag-am.plist
+
+  Test fire NOW:
+    launchctl kickstart -k gui/$(id -u)/com.you.tap-kb.scan-redflag-am
+
+  Bootout (remove from launchd):
+    launchctl bootout gui/$(id -u)/com.you.tap-kb.scan-redflag-am
+
+  Status:
+    launchctl list | grep tap-kb
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.YOU.tap-kb.scan-LANE-SLOT</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/YOU/.local/bin/tap-kb-notify.sh</string>
+    <string>AREA/scan-LANE</string>
+  </array>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>9</integer>
+    <key>Minute</key>
+    <integer>3</integer>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/Users/YOU/Library/Logs/tap-kb/launchd.scan-LANE-SLOT.out</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/YOU/Library/Logs/tap-kb/launchd.scan-LANE-SLOT.err</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/YOU/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+  </dict>
+</dict>
+</plist>

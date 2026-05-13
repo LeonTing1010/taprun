@@ -1,0 +1,38 @@
+{
+  "id": { "site": "<area>", "name": "scan-<lane>" },
+  "description": "<one-line: what this scan covers + cadence>. Composes <N> sensors + <M> threshold rules. JSONata pending CEL migration per core/CLAUDE.md:113.",
+
+  "observe": [
+    {
+      "_comment": "REGION 1 — sensors. Each gets a 'save' key for return-expression access.",
+      "_comment_op_tap": "Composing existing saved L0 sensor:",
+      "op": "tap",
+      "site": "fred",
+      "name": "series",
+      "args": { "series_id": "DGS10", "n_recent": 1 },
+      "save": "dgs10"
+    },
+    {
+      "_comment_op_fetch": "Or raw JSON API (when no saved tap exists). Note format: 'json'.",
+      "op": "fetch",
+      "url": "https://api.example.com/endpoint",
+      "method": "GET",
+      "format": "json",
+      "save": "raw_data"
+    },
+    {
+      "_comment_op_post": "POST with JSON body — supported for APIs like Binance C2C.",
+      "op": "fetch",
+      "url": "https://api.example.com/search",
+      "method": "POST",
+      "headers": { "Content-Type": "application/json" },
+      "body": { "key": "value" },
+      "format": "json",
+      "save": "search_result"
+    }
+  ],
+
+  "return": "($sensor_a := $observe.dgs10.latest_value; $sensor_b := $observe.raw_data.field; $derived := $sensor_a - 8; $breach_red := $derived < -8 ? [{ 'sev': 'RED', 'sensor': 'derived_metric', 'val': $derived, 'doc': '[[R_X#section]]', 'msg': 'Human-readable breach message' }] : []; $breach_yellow := $sensor_b > 100 ? [{ 'sev': 'YELLOW', 'sensor': 'sensor_b', 'val': $sensor_b, 'doc': '[[R_Y#watch]]', 'msg': 'Approaching threshold' }] : []; { 'ts': $now(), 'sensors': { 'sensor_a': $sensor_a, 'sensor_b': $sensor_b, 'derived_metric': $derived }, 'breaches': $append($breach_red, $breach_yellow) })",
+
+  "source_intent": "<one-line: why this scan exists, what framework doc it operationalizes>"
+}

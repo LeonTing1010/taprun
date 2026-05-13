@@ -124,6 +124,8 @@ Run this before committing the ADR file. Failed items block commit.
 [ ] P4: if amending coexistence/retirement, name the compensating ADR
 [ ] P5: §1 answers "did we try delete?" for any new abstraction
 [ ] P6: line count ≤ 150; no TL;DR section
+[ ] P7: §3 split into §3a Constraints (problem) + §3b Tests (solution; TBD allowed)
+[ ] P8: if multi-repo, §6 names the workspace verify gate (or marks "adding it is slice 1")
 [ ] grep for self-contradictions (section X says one thing, another says the opposite)
 [ ] cross-ADR references exist on disk (find . -name "<referenced-file>.md")
 [ ] status field is one of: Proposal | Drafting | Accepted | Superseded(by:<file>)
@@ -162,11 +164,30 @@ The single thing that, once you understand it, makes the rest obvious.
 
 Concrete artifact: function signature, type definition, lint rule, deletion list.
 
-## §3 Static guards (P1 enforcement)
+## §3a Constraints (what must hold — problem space)
 
-| Rule | Locus |
+Closed enumeration of invariants the implementation MUST satisfy.
+Stable across the implementation; rarely changes once accepted.
+Stated in terms of system behavior, NOT test names.
+
+| Constraint | Why it matters |
 |---|---|
-| <what must hold> | <test file:line, lint rule name, CI step name, git hook> |
+| <invariant as a problem statement> | <one line: what failure mode breaks if violated> |
+
+## §3b Tests (emergent — solution space)
+
+Initial list of tests that enforce §3a. **MUST be allowed to grow during
+implementation** — every slice may discover invariants that weren't
+visible at ADR-write time (D3: rules evolve). The post-hoc final test
+list, not this draft, is the source of truth.
+
+| Test | Constraint it covers | Verification layer |
+|---|---|---|
+| <test file:line OR "emergent / TBD"> | <ref to §3a row> | L1 / L2 / L3 / L4 |
+
+**Mark cells `emergent / TBD` when the test shape isn't yet obvious.**
+Prefer leaving them blank over inventing a test name that may not survive
+implementation. Reviewers should not block on §3b being complete.
 
 ## §4 What this deletes / adds
 
@@ -178,12 +199,74 @@ amend    ...
 
 One paragraph connecting this decision to the parent's load-bearing claim.
 
-## §6 References
+## §6 Cross-repo coordination (when applicable)
+
+Required iff the implementation touches more than one repository.
+
+- **ADR keeper**: which repo holds this ADR file. Default: the one whose
+  source code is most heavily touched.
+- **Peer repos**: list every other repo whose code, docs, or test suite
+  changes as part of this ADR.
+- **Workspace verify gate**: name the script / CI job that runs all
+  peers' tests AND a cross-repo grep for any symbol being deleted /
+  renamed. If none exists, **adding one is the first slice** — without
+  it the implementation will silently desync across repos.
+
+## §7 References
 
 - Parent ADRs (one line each)
 - Related decisions (one line each)
 - Code citations (file:line where relevant)
 ```
+
+---
+
+### P7 — Constraints over Tests (separation of concerns)
+
+§3a (Constraints, problem space) names invariants in plain language —
+"the daemon's liveness must not depend on user memory". §3b (Tests,
+solution space) names verification mechanisms — `cli_surface_test.ts:I1`.
+**Do NOT fix the test names in §3b at ADR-write time** beyond what's
+already self-evident. New invariants will surface during implementation
+(D3: rules evolve), and inventing test names for them upfront forces
+those discoveries to either be retro-fitted into a name that no longer
+matches, or ignored ("not in the ADR").
+
+The healthy pattern, observed mid-flight in a real ADR:
+
+```
+§3a Constraint: daemon liveness is OS-supervised, not user-managed
+§3b Test (at ADR-write time): I7 — popup gates `#dc-host-exited` to lazy mode
+                              (suggests an installMode signal must exist)
+[mid-implementation discovery: lazy-spawn becomes universal, so
+ installMode is no longer a meaningful distinction]
+§3b Test (revised): "I7 retired — universal lazy-spawn obsoletes the
+                    sandbox-vs-native split"
+```
+
+If the ADR couldn't accommodate that revision because I7 was treated as
+load-bearing, the implementation would either ship a useless gate or
+the ADR would be wrong on file. P7 says: §3a is the contract, §3b is
+the best current guess at how to check it.
+
+### P8 — Cross-repo verify scope (when applicable)
+
+Any ADR whose implementation spans 2+ repos must declare a
+**workspace-level verify gate** in §6: the script / CI step that runs
+every affected repo's testsuite AND a grep for renamed/deleted symbols
+across peer repos.
+
+A real failure case this prevents:
+
+> Slice 1 deleted user-facing CLI verb `tap bridge start` in repo `core/`.
+> `core/`'s test suite stayed green. A peer repo `public/`'s
+> `popup.html` still cited the deleted verb; `public/`'s test caught it
+> in CI but not in the editing repo's local verify. Two ADR slices later,
+> a separate consumer (`auto-fork.ts`) was also discovered to depend on
+> the deleted verb — silent for 6 commits.
+
+The fix: §6 names the script, and the script is invoked as part of
+EVERY slice's verify phase, not just the final one.
 
 ---
 
@@ -199,6 +282,9 @@ One paragraph connecting this decision to the parent's load-bearing claim.
 | Abstraction introduced with no dissolution attempt | P5 | Add dissolution paragraph to §1 |
 | > 150 lines | P6 | Delete defensive narrative; keep only what can't be derived from code |
 | TL;DR section present | P6 | ADR is too long — apply P6 and remove it |
+| Test names pinned in §3 with locus pre-specified | P7 | Move to §3b; mark emergent ones `TBD`; let names follow implementation |
+| Mixing "must hold" (problem) with "we test this with" (solution) | P7 | Split §3 → §3a Constraints + §3b Tests |
+| Cross-repo ADR with no workspace verify story | P8 | §6 names the gate; if none exists, adding one is the FIRST slice |
 
 ---
 

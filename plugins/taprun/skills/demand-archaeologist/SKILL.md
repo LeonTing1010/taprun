@@ -1,11 +1,11 @@
 ---
 name: demand-archaeologist
-description: Evidence-based demand discovery and product-idea validation, grounded in the Costly Signaling Law (Zahavi/Spence) with cohort-aware signal selection. Find what's worth building by weighting signals by emission cost AND by your resource constraints — solo founders track MicroAcquire/IH MRR while funded startups track hiring/funding. Covers three signal fronts (consumer comments / supply-side investment / creator-bet) across three user cohorts (solo AI-augmented / funded startup / enterprise). Use when users want to find product ideas, validate an existing idea, discover unmet needs, research a market, or decide what to build next. TRIGGER on "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
+description: Evidence-based demand discovery and product-idea validation, grounded in the Costly Signaling Law (Zahavi/Spence) for sample quality AND a 6-axis Discrimination Cascade (time × cohort × platform × evidence-type × money × supply-side) for decision quality. Costly signaling alone proves a real preference exists; the cascade proves a monetizable PMF candidate exists. Sampling and discrimination are different engines — Tap surfaces signals; the cascade decides which signals correspond to PMF. Find what's worth building by triangulating across orthogonal evidence axes — solo founders track MicroAcquire/IH MRR while funded startups track hiring/funding. Covers three signal fronts (consumer comments / supply-side investment / creator-bet) across three user cohorts (solo AI-augmented / funded startup / enterprise). Use when users want to find product ideas, validate an existing idea, discover unmet needs, research a market, or decide what to build next. TRIGGER on "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
 argument-hint: '[cohort] [platform] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '8.3.0'
+  version: '9.0.0'
 ---
 
 # Demand Archaeologist
@@ -103,6 +103,90 @@ This is why Phase 2.5 Competitive Teardown is non-optional and why Phase 2 must 
 ### Why attention platforms fail the same way
 
 Social recommender algorithms optimize watch-time × engagement — cheap signals at scale. Goodhart's Law guarantees attention decouples from value as optimization pressure grows. Our pipeline faces the same risk: pattern-match-count decouples from real demand once we optimize for it. The fix in both domains is identical — **switch the fitness function to costly signals**.
+
+---
+
+## The Discrimination Cascade — Why Costly Signaling Alone Doesn't Decide Quality
+
+Costly signaling is the **entry ticket**, not the quality measure. It proves a true preference exists. It does *not* prove a monetizable PMF candidate exists. These are different objects, and conflating them is the single largest source of false positives in demand archaeology.
+
+```
+Costly signal exists      →  posterior(real preference | signal) ↑↑
+                           ↛  posterior(monetizable PMF candidate | signal)
+
+PMF candidate exists      ⇔  ∏ independence axes hold simultaneously
+```
+
+A user spending 20 minutes typing a Reddit post about being scammed proves they hurt — it does *not* tell you whether:
+
+1. The cohort can pay (a 22M with $20k gambling debt can't sustain $20/mo SaaS)
+2. The platform will self-ship in 3-9 months (Meta Trust & Safety is openly building FB Marketplace scam defense)
+3. The substrate persists in 5 years (FB Marketplace may be replaced by TikTok Shop)
+4. The signal generalizes (one subreddit = one cohort echo chamber, not multi-cohort evidence)
+5. Anyone is paying for an inferior alternative (no money trail = imagined demand, not effective demand)
+6. The supply side has tried and visibly failed (no failure landscape = problem may not be hard, or may not be a real category)
+
+**Sampling vs Discrimination.** Tap sensors, multi-platform fan-out, sort policy, composite costly-signal scoring — all of these improve *sampling* (recall). They do not improve *discrimination* (precision). Past V2 sensor fit rates of 60-87%, further Tap optimization yields ≤10× lift on Tier-1 output rate. The cascade below yields >100× lift on the same metric.
+
+### The 6 Independence Axes
+
+Demand quality multiplies along orthogonal axes. Any axis at N=1 collapses the product to ~0. This is the application of multi-axis triangulation (cf. Sen capability approach, Gilboa-Schmeidler ambiguity aversion) to demand archaeology.
+
+| Axis | Question | How to operationalize | What N=1 looks like |
+|---|---|---|---|
+| **1. Time** | Does the signal hold across orthogonal time scopes? | Run same query at `t=month` AND `t=year`; require `permalink_set(month) ∩ permalink_set(year) ≠ ∅` AND >1 post on each side after dedup | Month-only spike = transient; year-only = historical fossil. Both alone fail [[feedback_demand_mining_year_scope_replication]]. |
+| **2. Cohort** | Do unrelated user groups converge on the same need? | ≥3 distinct cohort signatures (age/profession/region/buying-power class). r/Scams + r/personalfinance both = "victims" — same cohort. r/Scams + r/Privacy + r/Smallbusiness = 3 cohorts. | All evidence from one subreddit cluster = single echo chamber, fails [[feedback_cohort_layer_kill_primary]]. |
+| **3. Platform** | Independent platforms surface independently? | Minimum: Reddit + (HN OR IndieHackers) + (GitHub Issues OR App Store reviews). Cross-platform permalink → de-overlap by user identity. | One-platform "saturation" = retrieval artifact, not demand. |
+| **4. Evidence type** | Multiple distinct artifact classes converge? | Word (complaint/post) + Money (paid inferior alternative) + Supply (failed competitor / wontfix Issue / Crunchbase shutdown). At least 2 of 3. | Word-only = imagined demand; verbalization is cheap [[feedback_substack_income_listicles_unverifiable]]. |
+| **5. Money** | Are people *paying* for an inferior solution today? | IH/MicroAcquire MRR table (existing tiny players) ∪ App Store 1-2★ on paid app ∪ Stripe Atlas listing of failed startups in space. Find ONE money trail. | Zero $$ flowing anywhere = pain may be real but not effective demand. |
+| **6. Supply-side gap** | Has the supply side tried and visibly failed / explicitly declined? | GitHub `wontfix` with 50+ 👍 ∪ multiple sub-$1M MRR competitors all stagnant ∪ big-tech roadmap "considered, not built" ∪ 2+ Crunchbase shutdowns | No failure landscape = either not a real problem class, or vendor will fold-in [[feedback_structural_conflict_gate]]. |
+
+### Cascade order (cheap-to-expensive)
+
+Run gates in this order; each gate's filter is roughly half the survivors of the previous. Run cheap gates first to avoid spending downstream cost on candidates that will die anyway.
+
+```
+Tap surface (N ≈ 30-80 posts)
+    │
+    ▼
+[1] Time replication       (cheapest — second Tap run, t=month + intersection)
+    │  expect ~50% survive
+    ▼
+[2] Cohort independence    (skim post selftexts, cohort-tag, require ≥3 distinct)
+    │  expect ~40% survive
+    ▼
+[3] Platform independence  (rerun query on 2 more platforms, require overlap)
+    │  expect ~30% survive
+    ▼
+[4] Evidence-type diversity (each survivor: confirm ≥2 of {word, money, supply})
+    │  expect ~15% survive
+    ▼
+[5] Money anchor           (find one paying-customer-of-inferior-alt artifact)
+    │  expect ~5% survive
+    ▼
+[6] Supply-side gap        (find failure landscape OR vendor incentive misalignment)
+    │  expect ~2% survive
+    ▼
+Tier-1 candidate (typically 0-2 out of original 80)
+```
+
+**A zero-output run is a successful run.** Demand mining sessions returning 0 Tier-1 candidates do not indicate broken methodology — they indicate the methodology rejecting noise that would otherwise become wasted product development. False positives cost months of build time; false negatives cost one more sensor sweep.
+
+### What the cascade is NOT
+
+- **Not optional**. A candidate that "looks compelling" but fails any single axis is not a Tier-1 candidate. It may be a Tier-2 candidate (worth further investigation) or a Tier-3 (parked). Compelling-feeling intuition is the failure mode the cascade exists to override.
+- **Not sequential investigation**. The gates can be run in parallel where evidence is cheap (Tap sweeps), then synthesized. The cascade is an **AND**, not a workflow.
+- **Not a replacement for the Costly Signaling Law**. Costly signaling determines *which signals to admit at all*. The cascade determines *which admitted signals correspond to PMF candidates*. The skill needs both — costly signaling for sample quality, cascade for decision quality.
+
+### Connection to existing kill criteria
+
+The Phase 3 kill checklist (§Kill Criteria Checklist) operates on individual candidates. The cascade operates on the **evidence base supporting each candidate**. They compose:
+
+```
+Candidate survives kill checklist  ∧  Candidate survives 6-axis cascade  ⇒  Tier 1
+```
+
+Both must hold. Kill checklist catches *structural* problems (wrong vehicle, no billing justification). Cascade catches *epistemic* problems (insufficient independence of evidence).
 
 ---
 
@@ -950,7 +1034,20 @@ PostGhost injects a green/red badge directly into the Reddit UI. When users scre
 
 ### Phase 6: Rank and Recommend
 
-**Summary table:**
+**Required: every candidate must clear the 6-axis Discrimination Cascade (§ The Discrimination Cascade) before promotion.** The cascade is run *as part of this phase*, not after. Candidates that fail any axis are demoted, not ranked.
+
+**Cascade results table (run before the ranking table):**
+
+```markdown
+| Direction | Time (m∩y) | Cohort (≥3 indep) | Platform (≥3 indep) | Evidence (≥2 of W/M/S) | Money trail | Supply gap | Cascade verdict |
+|-----------|------------|-------------------|---------------------|------------------------|-------------|------------|-----------------|
+| Candidate A | ✓ 12 overlap | ✓ scam-victim + smb-owner + retiree | ✓ Reddit+HN+AppStore | ✓ W+S | TrustHero $14k MRR | 2 failed YC startups | Tier 1 |
+| Candidate B | ✓ 8 overlap | ✗ all r/personalfinance variants | — | — | — | — | Tier 3 — single-cohort echo |
+```
+
+Only Tier-1 candidates proceed to the ranking table.
+
+**Summary table (Tier-1 only):**
 
 ```markdown
 | Rank | Direction | Level | Evidence | Gap Type | Virality | Effort | Score |

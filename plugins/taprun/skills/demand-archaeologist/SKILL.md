@@ -5,7 +5,7 @@ argument-hint: '[cohort] [platform] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '9.0.0'
+  version: '9.0.1'
 ---
 
 # Demand Archaeologist
@@ -140,6 +140,25 @@ Demand quality multiplies along orthogonal axes. Any axis at N=1 collapses the p
 | **4. Evidence type** | Multiple distinct artifact classes converge? | Word (complaint/post) + Money (paid inferior alternative) + Supply (failed competitor / wontfix Issue / Crunchbase shutdown). At least 2 of 3. | Word-only = imagined demand; verbalization is cheap [[feedback_substack_income_listicles_unverifiable]]. |
 | **5. Money** | Are people *paying* for an inferior solution today? | IH/MicroAcquire MRR table (existing tiny players) ∪ App Store 1-2★ on paid app ∪ Stripe Atlas listing of failed startups in space. Find ONE money trail. | Zero $$ flowing anywhere = pain may be real but not effective demand. |
 | **6. Supply-side gap** | Has the supply side tried and visibly failed / explicitly declined? | GitHub `wontfix` with 50+ 👍 ∪ multiple sub-$1M MRR competitors all stagnant ∪ big-tech roadmap "considered, not built" ∪ 2+ Crunchbase shutdowns | No failure landscape = either not a real problem class, or vendor will fold-in [[feedback_structural_conflict_gate]]. |
+
+#### Gate 6 deep-search rule (added v9.0.1 from 5/18 layoff cluster N=1 false-confirm)
+
+When checking Gate 6, **incumbent-vendor search is necessary but insufficient**. Quadrants that look empty under "big incumbent + lawyer + service" search often have **2-5 niche indie / AI / template competitors already inside**, invisible unless you query for the specific form factor.
+
+**Required search phrasings** (run all six before marking Gate 6 ✓):
+
+```
+1. "AI [problem-domain] tool"            — surfaces free AI analyzers (e.g. Galaxy AI Layoff Severance Analyzer)
+2. "[problem] gumroad" / "[problem] notion template"  — surfaces $5-49 indie templates
+3. "[problem] free [tool/calculator/analyzer]"        — surfaces free-tier competitors
+4. "[problem] playbook" / "[problem] guide product"   — surfaces paid PDF / web products
+5. "Show HN [problem]" + "ProductHunt [problem]"      — surfaces recent indie launches
+6. "[problem] startup acquired" / "MicroAcquire [problem]" — surfaces past attempts (dead/acquired)
+```
+
+If any single phrasing surfaces 2+ active competitors, Gate 6 verdict downgrades from ✓ to ⚠️ MIXED until you assess (a) competitor quality (b) pricing floor (c) cohort overlap. A free competitor at the same form-factor tier pulls your floor and may invalidate paid V1; a stagnant niche competitor with sub-$5k MRR validates demand without crowding.
+
+**N=1 false-confirm example (5/18 Layoff Decision Compass)**: Cascade Gate 6 marked ✓ STRONG on "incumbent + lawyer + outplacement" landscape. Follow-up product-form question forced "AI layoff severance" search → surfaced [Galaxy AI Layoff Severance Analyzer](https://galaxy.ai/ai-layoff-severance-analyzer) (free) + [SimpleSeverance](https://www.simpleseverance.co/) + [AfterLayoff](https://afterlayoff.squarespace.com/) + Notion Layoff Guide Template. Tier 1 → Tier 2 demoted. The 6 specific phrasings would have caught these in first pass.
 
 ### Cascade order (cheap-to-expensive)
 

@@ -4,7 +4,7 @@ description: Encode your analytical framework as composite Tap plans (sensors ×
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '0.1.0'
+  version: '0.2.0'
 ---
 
 # thesis-monitor
@@ -80,6 +80,33 @@ If you find yourself writing a breach with `doc: ""` — STOP. Either:
 3. Compose L1 scan plan that fetches sensors + computes breaches + references anchors
 4. Schedule via launchd
 5. **Never** invert this order — never let a threshold first appear in a `.plan.json`. The `.plan.json` *reifies* the framework, never *invents* it.
+
+### Sensor integrity — fail loud, never silent-green (mandatory)
+
+A monitoring loop is an oracle: sensors × thresholds → breach. Its integrity property is the one that actually bites in production: **a broken or stale sensor must raise an alarm, not silently report "no breach."** The default behavior does the opposite — and that is the single most dangerous failure mode of thesis-as-code.
+
+**The silent-green trap.** If a sensor failed to fetch, `$observe.dgs10.latest_value` is `null`. Then `$lu_neg < -8` evaluates to **false** — no breach — and the digest reports "all clear." You now have a green light wired to a dead sensor, and you will trust it *precisely because it never alarms*. This is the generalized form of the 2026-06-03 FRED 504 incident: a daily-CSV timeout made `scan-redflag` return a bad reading and misfire `reconnect_extension` ([[feedback_fred_daily_csv_504_needs_cosd_2026-06-03]]).
+
+**Three guards every scan plan MUST carry:**
+
+1. **Presence guard** — every sensor binding is checked for null/absent BEFORE any threshold compares it. A missing value is itself a breach (`sev: 'STALE'`), never a silent false.
+2. **Freshness guard** — if the sensor carries a timestamp, assert it falls inside an expected window (a daily series older than N days = a frozen/dead feed = alarm). A value that stopped moving is indistinguishable from a healthy one unless you check its age.
+3. **Shape guard** — `$number(...)`-coerce and verify the field exists at the path you expect; a feed that changed shape (renamed field, wrapped envelope) must alarm, not read as null. This is the consumer-side static-drift failure from [[feedback_daily_report_weibo_parser_drift_2026-05-31]].
+
+JSONata pattern — make absence loud:
+
+```jsonata
+($dgs10 := $observe.dgs10.latest_value;
+ $stale := ($exists($dgs10) and $number($dgs10) = $dgs10) ? [] :
+   [{ 'sev': 'STALE', 'sensor': 'dgs10', 'val': null,
+      'doc': '[[R_4#sensor-liveness]]',
+      'msg': 'dgs10 null/non-numeric — scan is BLIND, not clear' }];
+ /* threshold rules below only meaningful when $stale = [] */
+ { 'ts': $now(), 'sensors': { 'dgs10': $dgs10 },
+   'breaches': $append($stale, $threshold_breaches) })
+```
+
+**The rule: "no breaches" is only trustworthy when paired with "all sensors live."** A scan that cannot tell *"nothing breached"* apart from *"I couldn't read anything"* is below the integrity line — it is not an oracle, it is a green light wired to nothing.
 
 ### Cohort fit
 
@@ -189,6 +216,11 @@ tap run kb/scan-redflag | jq '.return'
 launchctl kickstart -k "gui/$(id -u)/com.you.tap-kb.scan-redflag-am"
 sleep 5
 cat ~/Library/Logs/tap-kb/scan-redflag.log  # should show fresh digest
+
+# 4. Liveness test (catches silent-green): break a sensor on purpose
+#    (bad series_id, or pull the network), re-run, and confirm a STALE
+#    breach FIRES — not "all clear". If it reports clear, your presence
+#    guard is missing and the loop is blind.
 ```
 
 ## Anti-patterns
@@ -197,6 +229,7 @@ cat ~/Library/Logs/tap-kb/scan-redflag.log  # should show fresh digest
 |---|---|
 | Put thresholds in bash wrapper instead of plan `return` | Defeats the whole "plan IS the config" elegance; bash isn't MCP-discoverable + not auditable by `tap verify` |
 | Write thresholds without `doc:` anchor | R2 copy-drift returns; framework belief and scan rule must cross-reference |
+| Let a null / failed / stale sensor read as "no breach" | Silent-green: a dead feed reports all-clear and you trust it *because* it never alarms (the FRED 504 class). Add presence + freshness + shape guards; a missing sensor is itself a breach |
 | Use `op:parallel` for the sensor list | `save` keys flatten into array — breaks named JSONata access. Sequential is fine for daily cadence |
 | Try to add `op:notify` to Tap core | 11-op union is closed per ADR + S1 architecture test. Notify lives in wrapper, by design |
 | Write to `~/Documents/Obsidian/...` from launchd-spawned scripts | macOS TCC blocks it silently. Use `~/Library/Logs/` + `~/.tap/` (both TCC-free). Render Obsidian-visible content only from terminal-launched (FDA inherited) contexts |

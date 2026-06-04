@@ -6,7 +6,7 @@ allowed-tools: Read, Edit, Write, Grep, Glob, Bash, Agent
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '3.0.0'
+  version: '3.1.0'
 ---
 
 # Constraint-Driven Development
@@ -197,6 +197,22 @@ The adversarial sentence is a forcing function: writing it out loud exposes when
 
 ---
 
+## Phase 1b: Ground-truth anchor (independence — mandatory at external boundaries)
+
+Phase 1a makes the test adversarial, but the test's *inputs* are still authored by the same agent that will write the implementation. When the constraint concerns a boundary with something the agent did **not** invent — a real API response shape, a real error string, a real DOM, a real file format, a real wire message — a hand-typed synthetic input only proves the agent's belief is *self-consistent*, never that it *matches reality*. The test and the impl can both encode the same wrong assumption and agree with each other all the way to production.
+
+> **Rule: at an external boundary, the RED must be anchored to a captured real sample (a golden fixture), not a hand-typed synthetic.**
+
+- Capture one real instance (an actual recorded response / trace / DOM / file), freeze it as a fixture checked into the repo, and assert against THAT.
+- The fixture's provenance is part of the constraint: note where it came from and when (a real run, a recorded session, a vendor doc) so a later reader can re-capture it.
+- This is the *proactive* form of Phase 7's "reproduce with the exact real-world input shape" — do it at authoring time for boundary constraints, not only after a user hits the bug.
+
+**The failure this prevents (the independence hole):** a nav-error classifier's unit test fed an error string the author hand-wrote *already carrying the expected prefix*. Every test was green — but nothing proved the real host actually emits that prefix. Had production reality differed by one byte, the suite would have stayed green and the misclassification shipped. The fix: a golden fixture frozen from a real captured failure, so the assertion anchors to a byte the agent did not invent.
+
+A constraint whose every input was hand-authored by the implementer is below the **independence** line — it is a self-check, not an oracle.
+
+---
+
 ## Phase 2: Minimum Implementation (GREEN)
 
 Implement the minimum code to make the test pass:
@@ -362,6 +378,8 @@ Phase 1   RED     — write failing test
                     If yes, skip the test entirely (L1 > L2)
 Phase 1a ADVERSARIAL — write the "half-implementation shortcut" sentence
                       reject affirmative / mirrored / self-fulfilling tests
+Phase 1b ANCHOR   — at external boundaries, RED input = captured real fixture,
+                    not a hand-typed synthetic (independence property)
 Phase 2   GREEN   — minimum implementation
 Phase 3   Why     — business reason + audit date
 Phase 4   Verify  — typecheck, lint, tests, architecture (editing repo)
@@ -375,8 +393,9 @@ Phase 7   Post-mortem (triggered when real-world failure bypasses the suite)
           new RED → audit why original missed → fix → generalize
 ```
 
-The five failure modes CDD v4 rejects by construction:
+The six failure modes CDD rejects by construction:
 - *Claim too soon* — blocked by Phase 1a (adversarial sentence)
+- *Claim on imagined inputs* — blocked by Phase 1b (ground-truth anchor at external boundaries)
 - *Claim without demo* — blocked by Phase 4b (SHOW)
 - *Claim without cross-repo verify* — blocked by Phase 4 (peer-repo gate + grep)
 - *Claim with hidden duplication* — blocked by Phase 6 (3rd-repetition abstraction review)

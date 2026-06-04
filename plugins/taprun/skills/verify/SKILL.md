@@ -5,7 +5,7 @@ argument-hint: '[--gate <name>] [--fix]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '2.0.0'
+  version: '2.1.0'
 ---
 
 # Verify — Programmable Verification Gates
@@ -65,9 +65,28 @@ Same gate fails 3 times in a row → STOP, escalate to human
 
 ---
 
+## Oracle Integrity — what makes a gate trustworthy
+
+A gate is only an oracle if it holds four properties. Audit every gate against them: a gate that fails any one gives **false confidence — worse than no gate**, because it emits an "all clear" signal that isn't earned.
+
+| Property | Means | The failure it prevents |
+|---|---|---|
+| **Reproducible** | Same input → same verdict. No time, randomness, or network flakiness inside the pass/fail decision. | A "passing" run that fails on re-run — you never actually knew it was correct. |
+| **Non-subjective** | Verdict is a mechanical exit code, never a model judgment. | LLM self-assessment sneaking back in through the side door. |
+| **Tamper-evident** | The gate cannot be quietly weakened, skipped, or deleted to force green. | An agent deletes the failing test instead of fixing the code — green for the wrong reason. |
+| **Independent of the generator** | The pass/fail anchor was not invented by the same agent in the same pass. | A weak test written to fit a weak impl: both agree, both wrong. |
+
+**The one audit question for any gate:** *Does its verdict bottom out in a mechanical check, or in "an LLM/agent judged that it looks right"?* If the latter, it is below the line — **it is not a gate. An LLM is never a gate.**
+
+**Verdict = raw exit code, not the agent's narration.** "All gates pass" is a *claim*, not evidence. Show the unedited command output; the exit code decides. An agent that summarizes "everything passes" without the raw output has produced a subjective oracle.
+
+**Anchor at least one gate to ground truth the implementer did not author** — a golden fixture, a real captured trace, a differential check (old behavior == new behavior). A suite where every input was hand-written by the same agent that wrote the code only proves the belief is self-consistent, not that it matches reality.
+
+---
+
 ## Gate Catalog
 
-Six standard gates, ordered by verification strength. Each project configures the specific commands in CLAUDE.md.
+Seven standard gates, ordered by verification strength. Each project configures the specific commands in CLAUDE.md.
 
 | Gate | Name | Layer | What It Checks |
 |------|------|-------|----------------|
@@ -77,6 +96,7 @@ Six standard gates, ordered by verification strength. Each project configures th
 | 4 | **tests** | Behavior | Unit/integration tests pass |
 | 5 | **diff-size** | Metric | Lines added + files changed within limits |
 | 6 | **security** | Pattern | No hardcoded secrets, no sensitive files staged |
+| 7 | **oracle-integrity** | Meta | The gates themselves weren't eroded: test/assertion count and coverage did not drop, no `.skip`/`.only`/`xit`/commented-out tests introduced, no gate command disabled in this change |
 
 ### How to Run
 
@@ -116,10 +136,10 @@ Gate 5 (diff-size) ──────── run last (informational)
 | typecheck fails | Fix type errors — these block everything |
 | lint fails | Fix lint issues — often auto-fixable |
 | architecture fails | Read the rule, adjust code structure |
-| tests fail | Fix implementation first; update test only if the spec changed |
+| tests fail | Fix implementation first. Weakening or deleting a test is a SEPARATE change — never bundle it into a feature PR; cite the spec change that justifies it. Gate 7 (oracle-integrity) flags the resulting coverage drop |
 | diff-size exceeds limit | Split the change — were unnecessary modifications made? |
 | security alert | Remove hardcoded secrets, unstage sensitive files |
-| Same gate fails 3× | Stop. The rule itself may be wrong, or the task needs re-scoping |
+| Same gate fails 3× | Stop, escalate to human. If the rule is genuinely wrong, weakening it is a separate, human-approved change — never self-applied in the same PR as the code it would unblock |
 
 ---
 
@@ -152,6 +172,7 @@ For this skill to work, your project's CLAUDE.md should define:
 | tests | `pnpm test` | Vitest / Jest / pytest |
 | diff-size | (built-in, no command) | Default: 500 lines, 20 files |
 | security | (built-in, no command) | Scans for secrets/env files |
+| oracle-integrity | (built-in, no command) | Compares test count / coverage against baseline; flags skipped or deleted tests and disabled gates |
 ```
 
 If your project has a single verify script, just define:

@@ -1,11 +1,11 @@
 ---
 name: demand-archaeologist
-description: Evidence-based demand discovery and product-idea validation, grounded in the Costly Signaling Law (Zahavi/Spence) for sample quality AND a 6-axis Discrimination Cascade (time × cohort × platform × evidence-type × money × supply-side) for decision quality. Costly signaling alone proves a real preference exists; the cascade proves a monetizable PMF candidate exists. Sampling and discrimination are different engines — Tap surfaces signals; the cascade decides which signals correspond to PMF. Find what's worth building by triangulating across orthogonal evidence axes — solo founders track MicroAcquire/IH MRR while funded startups track hiring/funding. Covers three signal fronts (consumer comments / supply-side investment / creator-bet) across three user cohorts (solo AI-augmented / funded startup / enterprise). Use when users want to find product ideas, validate an existing idea, discover unmet needs, research a market, or decide what to build next. TRIGGER on "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
+description: Evidence-based demand discovery and product-idea validation, grounded in the Costly Signaling Law (Spence relative-cost-of-cheating; Zahavi's Handicap Principle retired 2019) for sample quality AND a 6-axis Discrimination Cascade (time × cohort × platform × evidence-type × money × supply-side) for decision quality. Costly signaling alone proves a real preference exists; the cascade proves a monetizable PMF candidate exists. Sampling and discrimination are different engines — Tap surfaces signals; the cascade decides which signals correspond to PMF. Find what's worth building by triangulating across orthogonal evidence axes — solo founders track MicroAcquire/IH MRR while funded startups track hiring/funding. Covers three signal fronts (consumer comments / supply-side investment / creator-bet) across three user cohorts (solo AI-augmented / funded startup / enterprise). Use when users want to find product ideas, validate an existing idea, discover unmet needs, research a market, or decide what to build next. TRIGGER on "what should I build", "find me opportunities", "validate this idea", "需求挖掘", "找已验证需求", "这个想法有人要吗", "how do I promote X".
 argument-hint: '[cohort] [platform] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '9.0.1'
+  version: '9.1.0'
 ---
 
 # Demand Archaeologist
@@ -38,18 +38,19 @@ This skill exists to get the sign right.
 
 Everything else in this skill — Validation Hierarchy, Demand Ladder, signal weights, kill criteria — is a **consequence** of one law. Internalize the law and every edge case becomes derivable without memorization.
 
-> **Costly Signaling Law** *(Zahavi 1975, Spence 1973, Maynard Smith 1982)*
+> **Costly Signaling Law** *(Spence 1973 job-market signaling, Nobel 2001 — relative-cost-of-cheating formulation)*
 >
-> **A signal's information content is proportional to the cost borne by its sender.**
-> Cheap-to-fake signals carry near-zero information. Expensive-to-fake signals carry real information.
+> **A signal's information content is proportional to the cost of FAKING it for a low-quality sender — NOT the absolute cost of emitting it.**
+> Cheap-to-fake signals carry near-zero information. Hard-to-fake signals carry real information.
+
+> ⚠️ **2019 correction (load-bearing — do not skip).** The older **Zahavi 1975 *Handicap Principle*** — "absolute signal cost / waste is what makes a signal honest" — has been **formally retired**: Penn & Számadó 2019, *Biological Reviews* 95:267–290 ("no theoretical or empirical support … usher it into an honourable retirement"); field consensus hardened 2019→2026. What enforces honesty is the **relative cost of *cheating*** (how expensive it is for a low-quality sender to *fake* the signal), not the absolute cost paid at equilibrium. Honest signals are **efficient investments, not wasteful handicaps**. Operationally this does **not** change the signal rankings below — they already key on "could a random person fake this cheaply?" (question #2) — but it **kills any reasoning that treats raw expense/effort as proof of honesty**. *A signal that looks costly but is cheap to FAKE is still noise* (e.g. an AI-written "I spent hours building this" post). When weighting a signal, the operative quantity is always **cost-to-fake**, never cost-to-emit.
 
 This is a structural theorem, not a heuristic. It holds across:
-- Evolutionary biology (peacock tails cost energy → honest mate-quality signal)
-- Labor economics (Spence's job-market signaling, Nobel 2001)
-- Game theory (cheap talk vs. commitment equilibria)
-- Information theory (high-cost actions carry more bits of evidence about the actor's state)
+- Labor economics (Spence's job-market signaling, Nobel 2001 — education separates because it is *differentially cheaper for high-ability senders to acquire*, not because it is expensive in absolute terms)
+- Game theory (separating vs. pooling equilibria turn on the **cost of cheating**, not the cost of signalling)
+- Information theory (an action is informative iff a different-type sender would find it differentially costly to mimic)
 
-**The only precondition**: sender's signaling cost varies with type. Where that holds, the law fires.
+**The only precondition**: the **cost of faking** the signal varies with sender type. Where that holds, the law fires.
 
 ### How to weight any signal you encounter
 

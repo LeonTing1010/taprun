@@ -5,7 +5,7 @@ argument-hint: '[cohort] [platform] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '9.1.0'
+  version: '9.1.1'
 ---
 
 # Demand Archaeologist
@@ -753,34 +753,34 @@ Launch **parallel agents** — one per source type:
 
 **Use MCP tools to browse platforms directly.** Do NOT substitute with WebSearch.
 
-For **Reddit** (English indie scene) — use Tap MCP Reddit taps:
+For **Reddit** (English indie scene) — use Tap MCP Reddit taps. **Verified interfaces (2026-06-07); args below are exact:**
 ```
-Step 1: Cross-subreddit discovery (parallel)
-  → tap.run("reddit", "dig", { keyword: "browser automation broken", 
-      subreddits: "webdev,automation,ClaudeAI,webscraping", min_comments: 10 })
-  → Returns posts with body text, sorted by engagement
+Step 1: Cross-reddit search (dig IS the search tap)
+  → tap.run("reddit", "dig", { q: "browser automation broken",
+      subreddits: "webdev,automation,ClaudeAI,webscraping",   // optional; folded into (subreddit:a OR …)
+      t: "year", sort: "relevance", limit: 25 })
+  → `keyword` is accepted as an alias for `q`.
+  → Returns { ok, query, count, posts[] } — each post: title/subreddit/score/num_comments/selftext(≤500)/permalink/author/created_utc/url.
+  → There is NO `min_comments` arg — pull then filter posts by num_comments yourself.
+  → ⚠️ GUARD: a query term is REQUIRED. Empty q → { ok:false }. count:0 with ok:true means genuinely few hits — do NOT read silent/empty as "no demand" (retrieval artifact; rerun with broader q / different platform per the Platform-independence axis).
 
-Step 2: Batch comment tree extraction
-  → tap.run("reddit", "posts", { urls: "url1,url2,url3", depth: 10, max_comments: 50 })
-  → Returns full threaded comment trees — THIS IS WHERE THE GOLD IS
-
-Step 3: Single post deep dive (when you need max depth on one thread)
-  → tap.run("reddit", "post", { url: "...", depth: 10, max_comments: 100 })
-
-Step 4: Targeted search (keyword + subreddit + comment search)
-  → tap.run("reddit", "search", { keyword: "...", subreddit: "webscraping", type: "comment" })
+Step 2: Deep-dive ONE thread's full comment tree (the gold)
+  → tap.run("reddit", "posts", { permalink: "/r/webscraping/comments/abc123/title-slug/", depth: 10, limit: 500 })
+  → posts takes a SINGLE `permalink` (not a batch of urls) + depth + limit. To cover several threads, call it once per permalink IN PARALLEL.
 ```
 
-**The two-step workflow that replaced 6+ ad-hoc calls:**
+**The two-step workflow:**
 ```
-dig(keyword, subreddits)  →  find high-engagement posts with body text
-posts(urls from dig)      →  batch extract full comment trees
+dig(q, subreddits?)        →  find high-engagement posts (read post.permalink + num_comments)
+posts(permalink) ×N parallel →  pull full threaded comment trees for the top N permalinks
 ```
 
-Other useful Reddit taps:
-- `reddit/relevant` — find outreach targets in specific subreddits (includes excerpt)
-- `reddit/mine` — surface demand signals with pain/demand classification
-- `reddit/audience` — discover subreddits where target audience gathers
+Other real Reddit taps (verified present):
+- `reddit/top_week` — top posts of the past week across r/all (zeitgeist scan); args: limit
+- `reddit/sub-rules` — subreddit metadata + rules (subscribers, submission_type) before outreach
+- `reddit/account-status` — logged-in account state (karma/age) — check before any write
+- `reddit/comment` — WRITE: post a comment (account-risk; not signal collection)
+(Note: there is no `reddit/post`, `reddit/search`, `reddit/relevant`, `reddit/mine`, or `reddit/audience` tap — use `dig` for search, `posts` for a single thread.)
 
 For **Chinese social platforms** (Xiaohongshu, Zhihu, etc.):
 ```

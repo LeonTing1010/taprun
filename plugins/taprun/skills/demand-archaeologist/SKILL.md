@@ -1090,22 +1090,23 @@ Only Tier-1 candidates proceed to the ranking table.
 
 #### Preflight Gate (BLOCKING — run before ANY outreach)
 
-**Before writing a single reply, run `reddit/preflight` on all target subreddits:**
+**Before writing a single reply, check account + each target subreddit with the real taps** (there is no `reddit/preflight` tap — compose these two):
 
 ```
-tap.run("reddit", "preflight", { subreddits: "automation,webdev,webscraping,ClaudeAI" })
+mcp__tap__run({ ref: "reddit/account-status" })                          # name, total karma, account age
+mcp__tap__run({ ref: "reddit/sub-rules", args: { sub: "automation" } })  # subscribers, submission_type, rules — run once PER target sub
 ```
 
-This checks: account karma, account age, subreddit minimum requirements, self-promo rules.
+Together these give: account karma, account age, subreddit minimum requirements, self-promo rules.
 
 | Result | Action |
 |--------|--------|
-| `can_comment: NO` | **STOP.**养号 first. Use `reddit/warmup` to find safe threads, build karma. |
+| `can_comment: NO` | **STOP.** 养号 first — no `reddit/warmup` tap exists; build karma by commenting in low-bar subs manually. |
 | `can_comment: RISKY` (karma < 10) | **STOP.** Most subs silently filter low-karma comments via AutoMod. Your replies will be invisible. |
 | `can_comment: MAYBE` (karma < 100) | Proceed with caution. Avoid promo-adjacent content entirely. Pure technical value only. |
 | `can_comment: LIKELY` (karma ≥ 100) | Safe for value-first replies. Still no product pitching until karma ≥ 500. |
 
-**Battle-tested lesson (2026-04):** An entire demand archaeology session ran to completion — 4 rounds of analysis, 30+ tap calls, SKILL.md rewrite — only to discover at the final outreach step that the Reddit account (karma=1) couldn't post comments. The `post-comment` tap returned HTTP 500 on every attempt. This preflight gate would have caught it in 5 seconds at the start.
+**Battle-tested lesson (2026-04):** An entire demand archaeology session ran to completion — 4 rounds of analysis, 30+ tap calls, SKILL.md rewrite — only to discover at the final outreach step that the Reddit account (karma=1) couldn't post comments. The `reddit/comment` write tap returned HTTP 500 on every attempt. This preflight gate (account-status + sub-rules) would have caught it in 5 seconds at the start.
 
 ---
 

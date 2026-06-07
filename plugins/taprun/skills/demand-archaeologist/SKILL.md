@@ -731,11 +731,11 @@ Launch **parallel agents** — one per source type:
 
 | Source | Tool | Signal Cost | What to Extract |
 |--------|------|-------------|-----------------|
-| **Developer communities** (Reddit, HN, indie hackers, V2EX) | Tap MCP (reddit taps) / WebSearch | ★★ | Validated success/failure cases, actual revenue numbers |
-| **Social platform feeds** (Reddit, Xiaohongshu, Weibo) | **Tap MCP (reddit / browser tools)** | ★ | Titles + engagement + **top comments** |
-| **Platform search results** | **Tap MCP (reddit / browser tools)** | ★★ | What users ACTIVELY SEEK |
-| **Q&A platforms** (Zhihu, StackOverflow) | **Tap MCP / WebSearch** | ★★ | "Is there a tool for X" threads + follower counts |
-| **App Store low-star reviews** | **Tap MCP (qimai/reviews)** | ★★★ | Paid users frustrated — the rare consumer signal that cost money to generate |
+| **Developer communities** (Reddit, HN) | Tap `reddit/dig`, `reddit/posts`, `hn/top` / WebSearch | ★★ | Validated success/failure cases, actual revenue numbers |
+| **Social platform feeds** (Reddit, Xiaohongshu, Weibo) | Tap `reddit/top_week`, `xhs/explore`, `weibo/hotsearch`, `weibo/user_timeline` | ★ | Titles + engagement + **top comments** |
+| **Platform search results** | Tap `reddit/dig`, `xhs/search`, `xiaohongshu/search`, `weibo/search_user` | ★★ | What users ACTIVELY SEEK |
+| **Q&A platforms** (Zhihu, StackOverflow) | WebSearch (no Zhihu tap in registry) | ★★ | "Is there a tool for X" threads + follower counts |
+| **App Store low-star reviews** | WebSearch (no App Store review tap; `asc/*` is own-app only) | ★★★ | Paid users frustrated — the rare consumer signal that cost money to generate |
 
 #### Supply-side sources (costly signals — weight each data point heavily)
 
@@ -745,7 +745,7 @@ Launch **parallel agents** — one per source type:
 | **ProductHunt launches** | WebSearch `site:producthunt.com <category>` | ★★★★ | New entrants in last 90 days, upvote distribution, comment critiques |
 | **Hiring boards** (LinkedIn, YC Work at a Startup, Indeed) | WebSearch | ★★★★ | Roles being hired for this category = companies committing salary budget |
 | **Funding databases** (Crunchbase, AngelList, Bloomberg) | WebSearch | ★★★★★ | Raises in the space — capital + LP pressure = strongest timing signal |
-| **Creator-bet tracking** (Bilibili/YouTube creator count on topic, publishing velocity) | **Tap MCP (bilibili, youtube taps)** | ★★★ | Creators investing hours → betting audience cares. Velocity derivative = timing signal |
+| **Creator-bet tracking** (Bilibili/YouTube creator count on topic, publishing velocity) | WebSearch (no bilibili/youtube tap in registry — author one with `capture` if needed) | ★★★ | Creators investing hours → betting audience cares. Velocity derivative = timing signal |
 | **Open-source workaround artifacts** | GitHub / blog posts / gists | ★★★★ | `S_rolled_own` — the strongest signal that pain is real AND monetizable (someone paid with their time) |
 | **Trend reports / policy** | WebSearch | ★★★ | Macro direction, platform subsidies, regulatory tailwinds |
 
@@ -782,25 +782,20 @@ Other real Reddit taps (verified present):
 - `reddit/comment` — WRITE: post a comment (account-risk; not signal collection)
 (Note: there is no `reddit/post`, `reddit/search`, `reddit/relevant`, `reddit/mine`, or `reddit/audience` tap — use `dig` for search, `posts` for a single thread.)
 
-For **Chinese social platforms** (Xiaohongshu, Zhihu, etc.):
+For **Chinese social platforms** — use saved Tap taps via `mcp__tap__run` (they encapsulate the SPA selectors; the old imperative `mcp__tap__page_nav/screenshot/click` API no longer exists — the MCP surface is only capture/verify/mark/run). **Fetch each tap's exact arg schema with `resources/read({uri})` before calling — do NOT guess arg names.**
 ```
-Step 1: Navigate to search page
-  → mcp__tap__page_nav("https://www.xiaohongshu.com/search_result?keyword=KEYWORD")
+Xiaohongshu (小红书):
+  → mcp__tap__run({ ref: "xhs/search", args: {…} })   # per-note: noteId/title/author/like_count/xsec_token
+  → mcp__tap__run({ ref: "xhs/note-comments-extract", args: { detail_url } })  # comment tree (needs xsec_token from search)
+  → mcp__tap__run({ ref: "xhs/explore" })             # trending feed (rendered DOM)
+  (alt: xiaohongshu/search · xiaohongshu/note-extract)
 
-Step 2: Screenshot to see the page
-  → mcp__tap__tap_screenshot()
-
-Step 3: Extract titles + engagement via page_eval
-  → See references/platform-selectors.md for platform-specific JavaScript patterns
-
-Step 4: Click into the TOP 3 high-engagement posts
-  → mcp__tap__page_click(<top post element>)
-
-Step 5: Extract comments
-  → See references/platform-selectors.md
+Weibo (微博):
+  → mcp__tap__run({ ref: "weibo/hotsearch" })          # live 热搜 board
+  → mcp__tap__run({ ref: "weibo/search_user" | "weibo/user_timeline" | "weibo/comments", args: {…} })
 ```
 
-Adapt selectors per platform. See `references/platform-selectors.md` for reusable extraction patterns.
+**No tap covers the site/intent you need?** Forge one: `mcp__tap__capture({ url, intent })`, then run it. (There is no Zhihu tap in the registry — use WebSearch for Zhihu.)
 
 #### The Dual Search Test
 

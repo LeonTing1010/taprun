@@ -5,7 +5,7 @@ argument-hint: '[cohort] [platform] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '9.1.1'
+  version: '9.1.2'
 ---
 
 # Demand Archaeologist

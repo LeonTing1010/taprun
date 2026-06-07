@@ -5,7 +5,7 @@ argument-hint: '[cohort] [platform] [constraints]'
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '9.1.2'
+  version: '9.2.0'
 ---
 
 # Demand Archaeologist
@@ -139,7 +139,7 @@ Demand quality multiplies along orthogonal axes. Any axis at N=1 collapses the p
 | **2. Cohort** | Do unrelated user groups converge on the same need? | ≥3 distinct cohort signatures (age/profession/region/buying-power class). r/Scams + r/personalfinance both = "victims" — same cohort. r/Scams + r/Privacy + r/Smallbusiness = 3 cohorts. | All evidence from one subreddit cluster = single echo chamber, fails [[feedback_cohort_layer_kill_primary]]. |
 | **3. Platform** | Independent platforms surface independently? | Minimum: Reddit + (HN OR IndieHackers) + (GitHub Issues OR App Store reviews). Cross-platform permalink → de-overlap by user identity. | One-platform "saturation" = retrieval artifact, not demand. |
 | **4. Evidence type** | Multiple distinct artifact classes converge? | Word (complaint/post) + Money (paid inferior alternative) + Supply (failed competitor / wontfix Issue / Crunchbase shutdown). At least 2 of 3. | Word-only = imagined demand; verbalization is cheap [[feedback_substack_income_listicles_unverifiable]]. |
-| **5. Money** | Are people *paying* for an inferior solution today? | IH/MicroAcquire MRR table (existing tiny players) ∪ App Store 1-2★ on paid app ∪ Stripe Atlas listing of failed startups in space. Find ONE money trail. | Zero $$ flowing anywhere = pain may be real but not effective demand. |
+| **5. Money** | Are people *paying* for an inferior solution today — **and on which market's rail?** | IH/MicroAcquire MRR ∪ App Store 1-2★ on paid app ∪ Stripe Atlas shutdowns. Find ONE money trail **on the target market's own monetization rail** — see Gate 5 refinement below. | Zero $$ on *this market's* rail = pain may be real but not *effective* demand here (the same demand may still be effective on a different rail/market). |
 | **6. Supply-side gap** | Has the supply side tried and visibly failed / explicitly declined? | GitHub `wontfix` with 50+ 👍 ∪ multiple sub-$1M MRR competitors all stagnant ∪ big-tech roadmap "considered, not built" ∪ 2+ Crunchbase shutdowns | No failure landscape = either not a real problem class, or vendor will fold-in [[feedback_structural_conflict_gate]]. |
 
 #### Gate 6 deep-search rule (added v9.0.1 from 5/18 layoff cluster N=1 false-confirm)
@@ -160,6 +160,28 @@ When checking Gate 6, **incumbent-vendor search is necessary but insufficient**.
 If any single phrasing surfaces 2+ active competitors, Gate 6 verdict downgrades from ✓ to ⚠️ MIXED until you assess (a) competitor quality (b) pricing floor (c) cohort overlap. A free competitor at the same form-factor tier pulls your floor and may invalidate paid V1; a stagnant niche competitor with sub-$5k MRR validates demand without crowding.
 
 **N=1 false-confirm example (5/18 Layoff Decision Compass)**: Cascade Gate 6 marked ✓ STRONG on "incumbent + lawyer + outplacement" landscape. Follow-up product-form question forced "AI layoff severance" search → surfaced [Galaxy AI Layoff Severance Analyzer](https://galaxy.ai/ai-layoff-severance-analyzer) (free) + [SimpleSeverance](https://www.simpleseverance.co/) + [AfterLayoff](https://afterlayoff.squarespace.com/) + Notion Layoff Guide Template. Tier 1 → Tier 2 demoted. The 6 specific phrasings would have caught these in first pass.
+
+#### Gate 5 refinement — money rails are market-local (added v9.2.0 from the CN×US vibe-coding mismatch)
+
+**Pain is universal; the monetization rail is local.** A market can only charge for the layer it has already built collection rails for. When AI commoditizes a mechanical layer (making it ~free), value is forced *off* that layer (Costly Signaling / "value ∝ judgment·distribution·trust, inverse to automatable") — but **WHERE the displaced value lands is set by local economic infrastructure, not by the demand.** So a single global demand can have a paying money trail in one market and none in another, *for the same layer*.
+
+**Gate 5 must therefore be run per target market — not assumed transferable.** "Someone, somewhere pays" is insufficient. Ask: **does THIS market have a collection rail for THIS layer?**
+
+| | Money rail that exists (where displaced value lands) | Rail that's largely absent |
+|---|---|---|
+| **US** | per-seat SaaS subscription · contract-a-stranger services (Upwork/Toptal) · VC-funded tools | (knowledge-payment is comparatively thin) |
+| **China (mainland)** | knowledge-payment / 知识付费 / IP / attention-monetization · super-app **platform internalization** (BAT/ByteDance fold the fix in) · compliance procurement (等保/信创) | independent third-party **tool subscription** · faceless **gig-service** for code/data |
+
+**Root cause — rails are crystallized cheating-deterrence machinery** (Costly Signaling extended; "trust" is the felt output, the hard primitive is *cost-of-faking*): a society routes transactions through whoever can keep cheating-cost high cheaply. US deterrence is institutional (faceless monthly SaaS, contract-a-stranger) → independent tool/service rails clear. China deterrence collapses to two poles — **the platform** (private enforcement) and **the visible, persona-bearing person** (reputation) — with a vacuum between → value is internalized by a 大厂 or routed to a 人设博主 (知识付费/IP); a faceless third-party tool/gig rail doesn't get built. Different societies build deterrence with different signal systems (institutional vs personal/persona), so identical pain is captured at different layers.
+
+**Empirical anchor (do NOT argue the falsified version).** The mechanism is NOT "Chinese courts are slow" — *falsified*: World Bank DB2020 ranked China #5 vs US #17 on Enforcing Contracts, faster trials (and that high rank was the object of the 2021 data-manipulation scandal that killed Doing Business — if anything inflated). The real gap is downstream: **(1) judgment-collection (执行难)** — only ~50% of money judgments are actually collected, 30–43% of debtors have no attachable assets, 失信被执行人 blacklist hit 8.5M people (2024) — a judgment is a paper win; **(2) IP copyability** — 66% software piracy (2017) vs 15% US, statutory-only damages (¥500K cap), so a faceless software *product* is structurally hard to defend → depressed SaaS WTP. (Sub-economic small-claim litigation is *symmetric* US/CN — a background condition, not the differentiator.) Smoking gun for platform-routing: **Alipay escrow (2003)** was created because "cross-region strangers couldn't transact," and **Taobao 大众评审** adjudicated >30M disputes by 2015 — the platform manufactured the deterrence courts didn't supply. Rail-size confirmation: China live-commerce ¥4.9tn + knowledge-payment ¥110–180bn vs all-China SaaS only $14–26bn (mostly big-vendor; AI-coding tools free/bundled); US SaaS $140bn = 5–10× China's despite a ~1.5× larger economy. *(Caveats: DB2020 was the scandal's object — last-comparable-edition only; collection-rate is SPC self-reported and improving; market sizes are research-firm ranges.)*
+
+**Operational rules:**
+1. Run Gate 5 separately for each target market; label the verdict per-market.
+2. Zero $$ on market A's rail ≠ no demand — check whether it monetizes on a *different* rail (e.g. CN: content/教程, not tool).
+3. Before declaring a layer monetizable in a market, locate where that market's deterrence is cheap (platform / institution / person) — only that pole has a rail you can ride.
+
+**Worked example (vibe-coding cleanup, 2026-06):** **US Gate 5 = ✓** — CodeRabbit $40M ARR / 8k paying cos, manual audits $500–3000, freelancers "70% of my work is fixing AI apps." **CN Gate 5 = ✗ (cleanup-service/tool layer)** — `xhs/note-comments-extract` on the 5 highest-engagement 翻车 posts (1263/806/605/292/1865 likes), 50 top comments → **zero transaction intent** (no 求修/报价/接单/外包); same pain monetizes as 教程/知识付费 + 大厂工具 + 信创. Same demand, **opposite Gate-5 verdict by market** — the rail differs, not the demand. [[project_vibecode_cleanup_demand_killed_redocean]] · [[feedback_monetization_rail_trust_topology_gate5_per_market]]
 
 ### Cascade order (cheap-to-expensive)
 

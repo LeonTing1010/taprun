@@ -1,6 +1,8 @@
 # Platform-Specific Selectors for Tap MCP
 
-Reusable patterns for extracting engagement data from social platforms via `mcp__tap__page_eval`.
+> ⚠️ **DEPRECATED (2026-06-07).** This file documents the old imperative MCP API (`mcp__tap__page_nav` / `page_eval` / `page_click`), which **no longer exists** — the Tap MCP surface is now only `capture` / `verify` / `mark` / `run`. Selectors are now encapsulated inside saved taps (`xhs/search`, `xhs/note-comments-extract`, `xhs/explore`, `weibo/hotsearch`, `weibo/*`); invoke them with `mcp__tap__run`. Keep this file ONLY as a selector crib when authoring a NEW tap via `mcp__tap__capture`. Do not follow the `mcp__tap__page_*` call examples below — they will fail.
+
+Reusable selector patterns for social platforms (legacy reference — selectors only, NOT a current call API).
 
 ## Xiaohongshu (小红书)
 

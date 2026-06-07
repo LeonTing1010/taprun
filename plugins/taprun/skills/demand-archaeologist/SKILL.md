@@ -286,7 +286,7 @@ All three layers must resist retraction to score 1.0. **Why it matters**: the pi
 | Semi-structured | Schema + embedded free text needing light rules | JD responsibilities body, PH launch description, X bio | 0.6 |
 | Free-text requiring LLM | Must semantically interpret | Comment sentiment, tweet intent, implicit WTP from a post | 0.3 |
 
-**Why a separate dimension**: LLM may *contextualize an anomaly after detection* (explaining "why this ∆ happened") — but **LLM must not be in the signal extraction path**, because every LLM pass introduces probabilistic drift (Fact A2) and lossy conversion (Fact R1). A signal that's strong on cost + irreversibility but requires LLM to extract will produce inconsistent pipeline outputs run-over-run.
+**Why a separate dimension**: LLM may *contextualize an anomaly after detection* (explaining "why this ∆ happened") — but **LLM must not be in the signal extraction path**, because every LLM pass introduces probabilistic drift (Fact A2) and lossy conversion (Fact R1). A signal that's strong on cost + irreversibility but requires LLM to extract will produce inconsistent pipeline outputs run-over-run. *(Empirical backing: LLM-as-judge vs human-majority Cohen's Kappa is only 0.288–0.578 with position bias that worsens on harder/subjective tasks — TnT-LLM, KDD 2024. The source-of-record itself recommends using LLMs as evaluators only "with caution and verification by measuring agreement with human preferences." Treat LLM-extracted labels as a 0.3–0.6-reliability noisy judge, never as ground truth.)*
 
 **4. Derivative** — whether time-series ∆ carries information beyond the absolute state.
 

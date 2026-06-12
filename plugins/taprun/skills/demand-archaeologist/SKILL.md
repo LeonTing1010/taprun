@@ -1116,7 +1116,7 @@ Only Tier-1 candidates proceed to the ranking table.
 
 ```
 mcp__tap__run({ ref: "reddit/account-status" })                          # name, total karma, account age
-mcp__tap__run({ ref: "reddit/sub-rules", args: { sub: "automation" } })  # subscribers, submission_type, rules — run once PER target sub
+mcp__tap__run({ ref: "reddit/sub-rules", args: { subreddit: "automation" } })  # subscribers, submission_type, rules — run once PER target sub (arg name is `subreddit`, NOT `sub` — the wrong name silently fetches r// and returns garbage)
 ```
 
 Together these give: account karma, account age, subreddit minimum requirements, self-promo rules.

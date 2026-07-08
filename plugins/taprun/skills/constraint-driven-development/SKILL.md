@@ -6,7 +6,7 @@ allowed-tools: Read, Edit, Write, Grep, Glob, Bash, Agent
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '3.1.0'
+  version: '3.2.0'
 ---
 
 # Constraint-Driven Development
@@ -24,6 +24,16 @@ Most "done but not really" failures come from three specific gaps. This skill tr
 3. **Post-mortem** — when a real user hits an issue the test suite missed, the fix is not complete until a new RED test has been added that would have caught the issue, AND that test has been traced back to the original gap (*"why did we think we were covered?"*). The fix lands AFTER the test, not before. (See Phase 7 below.)
 
 These three layers close the three say-do failure modes: *claim too soon*, *claim without demo*, *claim without audit*. Skip any one and the discipline collapses — the skill lets an agent declare Done while having done very little.
+
+## The three grounding gaps (v3.2 addition)
+
+The v3 layers close *say-do* gaps (you claimed more than you did). v3.2 closes the deeper *spec-truth* gaps — the ways a **fully green, honestly-demoed** feature is still wrong because the constraint set itself doesn't correspond to the truth. Correctness is not a property of the code; it is a **relation between the code and an intent that lives outside the code**. A test is only ever as good as its grip on that external referent. Three ways the grip fails:
+
+1. **Unformalizable referent** — the thing you're checking *correct against* is a human judgment or an unhappened reality (*"is this the report the user wanted?"*), not a formal fact. A weak test here is not a weak guarantee — it is **false precision**: a green check that disguises a human judgment as a machine fact, which is *worse* than no test. Fix: **triage formalizability before entering the ladder** (Phase 1, pre-step) and route unformalizable referents to an explicit L0 human/reality gate instead of faking a test.
+2. **Co-authored spec** — the constraint and the implementation were written by the *same* context, so they can encode the same wrong assumption and agree with each other all the way to production. Phase 1b anchors the *inputs* to reality; v3.2 extends independence to the *constraint author* (Phase 1b, author-independence). If generation is free, a second independent context is cheap — use it.
+3. **Missing constraint** — the bug lives in the property you never thought to write. Phase 1a catches *weak tests of known properties* with a mental sentence; it does not catch *unknown properties*. Fix: a **mechanical completeness gate** — mutation testing — that makes a machine, not the author's imagination, hunt for the wrong implementation that survives your whole constraint set (Phase 4, mutation gate).
+
+The through-line: every verification tool checks the artifact against a referent *you supplied*; none can supply it for you. These three gaps are the three ways the supplied referent fails to be complete, independent, and real.
 
 ## Philosophy
 
@@ -54,6 +64,23 @@ Based on the gap analysis, decide which NEW constraints to write in Phase 1.
 ## Phase 1: Constraint Declaration (RED)
 
 Write the constraint FIRST. The test must fail before implementation.
+
+### Phase 1 pre-step: Formalizability triage (mandatory)
+
+**Before you reach for the ladder, decide whether a test can mean anything at all.** The ladder below assumes a constraint that *can* climb toward the type system. But some constraints check against a referent that is **not a formal fact** — a human judgment, a taste call, an unhappened reality (*"is this the right report", "does this read naturally", "is this the layout the user wanted"*). Writing an L2/L3 test for such a referent produces **false precision**: a green check that launders a human judgment into a machine fact. That is *worse* than no test, because it *feels* like proof.
+
+Ask: **is the thing this constraint is correct-against a formal object, or a human/real-world judgment?**
+
+- **Formal referent** (money must balance, auth must not leak, state machine must not enter an illegal transition, output must be a permutation of input) → enter the ladder, push toward L1. These are provable-in-principle; under-specifying them is *negligence*.
+- **Human / real-world referent** (aesthetic, contextual, "is this what they meant") → **do NOT write a test**. Route to the **L0 gate** below. Trying to formalize the unformalizable is *waste* and produces false precision.
+
+Most real features are **a formalizable core wrapped in an unformalizable shell** (the money must balance / the invoice must *look right*). Draw the boundary explicitly and put each constraint on the correct side. Mis-locating this boundary — unit-testing your way through a taste question, or hand-waving a core you could have proven — is the most common and most expensive CDD failure.
+
+**L0 — Human / reality gate** (the bottom of the ladder; the honest terminal for unformalizable referents):
+
+> Instead of a test, register a **named judge + a re-check cadence + the observable they look at**. Example: `// L0-judgment: <who> reviews <what observable> every <cadence>; last-ok <date>`. The demo in Phase 4b is the *evidence* for this gate, but the *verdict* is a human's, not the agent's — the report must name the human and what they will look at, not assert "looks good".
+
+An L0 constraint is a first-class constraint, not an escape hatch: it is *declared*, *assigned*, and *re-checked* — it just has a human oracle instead of a machine one. What it must never do is masquerade as an L2/L3 test.
 
 ### Structure
 
@@ -136,6 +163,9 @@ The ladder, strongest to weakest:
 | **L3 Behavioral test** | input → output specific cases | save / commit | medium | half-impl can pass with hardcoded return |
 | **L4 Architecture / lint / grep** | structural checks on source text | commit | weak | trivial to obfuscate around |
 | **L5 Documentation** | English sentence in CLAUDE.md / ADR | none | weakest | depends on memory |
+| **L0 Human / reality gate** | named judge reviews a named observable on a cadence | out-of-band | *off-axis* | referent is not formal — no machine can hold it |
+
+**L0 is not "stronger than L1".** It sits *off* the mechanical strength axis. You reach it by the Phase-1 **triage** (the referent is a human/real-world judgment), not by ranking — it is the honest terminal for constraints no test can hold, never a fallback for constraints you were too lazy to formalize. If a formal referent exists, L0 is the *wrong* choice; if it doesn't, L1–L5 are all false precision.
 
 **Rule 1.** If a stronger layer can express the constraint, the weaker layer is redundant — delete it. Example: "only `materializeRun()` may produce `Run` instances" is L4 (grep for object literals) but is also L1 (`Run` is a branded type; only the helper can forge the brand). Choose L1 and drop the L4 grep.
 
@@ -147,6 +177,12 @@ The ladder, strongest to weakest:
 - **Const assertions** + `as const` for "this string is one of a finite set"
 
 **Rule 3.** When you DO need L4 (grep), narrow it to the single residual surface the type system can't cover. For branded types this is usually `as <Brand>` casts in non-constructor modules — a 1-line guard, not a "no literals anywhere" guard.
+
+**Rule 4 — weight the choice by churn, don't blindly max strength.** "Strongest layer first" is the default, not an absolute. The strongest encoding (a bespoke L1 type, or a heavy proof-shaped invariant) is also the most **change-fragile**: every rule edit must re-satisfy it. So weight the rung by *value impact × volatility*:
+- **Stable + Safety** (an invariant that rarely changes and destroys value when violated — money conservation, auth) → push to L1. The encoding cost amortizes; fragility is a feature (it *should* scream when touched).
+- **Volatile + Quality/Delight** (an experimental rule, an A/B pricing tweak, a heuristic still being tuned) → L2/L3 is *correct*, not lazy. Encoding a churning rule into the type system means every experiment fights the compiler; the cheapest-to-move oracle that still catches the violation wins. Over-encoding volatile logic is its own failure mode — it taxes exactly the code that changes most.
+
+The rule of thumb: **encode at the highest rung whose fragility you can afford at this code's churn rate.**
 
 ### Test type decision tree (after L1 is exhausted)
 
@@ -211,6 +247,17 @@ Phase 1a makes the test adversarial, but the test's *inputs* are still authored 
 
 A constraint whose every input was hand-authored by the implementer is below the **independence** line — it is a self-check, not an oracle.
 
+### Phase 1b (continued): author independence — the constraint, not just its inputs
+
+Phase 1b so far anchors the *inputs*. But the **constraint logic itself** is normally written by the same context that will write the implementation — and Phase 1a's adversarial sentence is *self*-adversarial (the same mind imagining its own shortcut). If an agent can hallucinate an implementation, it can hallucinate a *matching* spec: both encode the same wrong assumption and agree with each other all the way to production. Phase 1a narrows this hole; it does not close it.
+
+**When generation is free, a second independent context is cheap — spend it on independence:**
+
+- **Split spec-author from impl-author.** One context reads only the requirement, writes and freezes the RED (plus the Phase-1b fixture), and **never sees the implementation**. A second context is allowed only to make the frozen RED go green. The oracle and the thing-under-test now have different authors.
+- **Add a red-team pass (strongest form).** A third context's *only* job: **write an implementation that passes every RED but is wrong in real use.** If it succeeds, it has just handed you a missing constraint for free — turn its wrong-but-passing impl into a new RED (this is the mechanized form of Phase 1a's sentence: an *external* adversary instead of an imagined one).
+
+Escalate by value impact: **Safety / what-x-what constraints should clear at least the split-author bar; a red-team pass is warranted when a violation destroys value irreversibly.** Delight-level constraints don't need it. The point is structural: an oracle authored by the thing it judges is a self-consistency check, not an independent one — and independence is the only thing that turns "the spec and the code agree" into evidence rather than tautology.
+
 ---
 
 ## Phase 2: Minimum Implementation (GREEN)
@@ -223,6 +270,15 @@ Implement the minimum code to make the test pass:
 4. Confirm the test **PASSES**
 
 **Resist the urge to refactor or add extras. GREEN means "test passes" — nothing more.**
+
+### Eyeball the shrunk counterexample (mis-specification catch)
+
+When a property test (L2) fails and your framework **shrinks** to a minimal counterexample, do not reflexively "fix the code to make it pass". **Look at the witness first.** A property and a concrete example have complementary failure modes — the property over-reaches in ways a specific case exposes. Ask: *"is this counterexample actually a bug, or is my property too strong?"*
+
+- Genuine bug → fix the implementation (normal GREEN).
+- The counterexample is *acceptable behavior* → your **property is mis-specified** (Phase 1a's mirror image: not a weak test, but an over-strong one). Weaken/correct the property before writing any implementation code. Do NOT special-case the implementation to dodge a witness that was actually fine — that hard-codes your mis-specification into the code.
+
+This is the spec × example triangulation in practice: the property behaves like a spec, the shrunk witness behaves like an eyeball-able example, and their disagreement localizes *which one is wrong*. Skipping the eyeball step silently resolves every disagreement in favor of the (possibly wrong) property.
 
 ---
 
@@ -237,6 +293,17 @@ Add the business reason as a comment inside the test block:
 If the constraint depends on an external fact (tax rate, regulatory requirement, supplier agreement):
 - Add an **audit date** via your framework's metadata (e.g., `meta: { audit: '2026-Q4' }`)
 - This marks when the fact should be re-verified against the real world
+
+### Validity envelope (not just an audit date)
+
+An audit date says *"re-check this fact"*. It does **not** catch the more dangerous case: the fact is unchanged but the **assumptions the constraint silently relies on** stop holding because the *system* moved. A constraint is only correct **inside an operating envelope** — an input range, a precondition, a load regime it was written for. When execution moves outside that envelope, a green check is a proof about a world that is no longer this one.
+
+> **The Ariane 5 failure mode:** the guidance spec was reused from Ariane 4 and was *correct* — for Ariane 4's flight envelope. Ariane 5's higher horizontal velocity overflowed a 64→16-bit conversion the spec had *proven safe under the old envelope*. The fact didn't change; the world outgrew the assumption.
+
+For any constraint carrying a non-trivial assumption, record the envelope alongside the Why, and **make leaving the envelope a signal, not a silent pass**:
+- Note the assumed range/precondition: `// Envelope: assumes qty ≤ 10_000 and single-currency; outside → constraint is void, not satisfied`.
+- Where cheap, encode the envelope as a runtime guard/assertion that **fails loudly** when violated, rather than letting downstream logic run on an out-of-envelope input under a still-green suite.
+- A branded/refined type that makes out-of-envelope inputs *unrepresentable* (L1) is the strongest form — it turns "we left the envelope" from a runtime surprise into a compile error.
 
 ---
 

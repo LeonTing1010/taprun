@@ -195,6 +195,7 @@ if git_here; then
     if [[ -n "$LAST_GOOD_SHA" ]]; then
       _tl_save=$(mktemp); cp "$STATE_FILE" "$_tl_save"
       git reset --hard "$LAST_GOOD_SHA" >/dev/null 2>&1 || true
+      mkdir -p "$(dirname "$STATE_FILE")"           # reset --hard may drop the (now-untracked) .claude/ dir
       cp "$_tl_save" "$STATE_FILE"; rm -f "$_tl_save"
       RATCHET_NOTE="REGRESSION reverted: failures rose $LAST_FAIL_COUNT → $FAILS, so the working tree was reset --hard to last-good ($LAST_GOOD_SHA). The loop never walks backward. Take a DIFFERENT approach this iteration."
     else

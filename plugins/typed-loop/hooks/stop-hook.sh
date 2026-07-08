@@ -180,6 +180,7 @@ if git_here; then
   if [[ "$FAILS" -lt "$LAST_FAIL_COUNT" ]]; then
     # PROGRESS: measure strictly decreased → accept as new last-good checkpoint.
     git add -A >/dev/null 2>&1 || true
+    git reset -q -- "$STATE_FILE" >/dev/null 2>&1 || true  # never checkpoint the loop's own bookkeeping
     if ! git diff --cached --quiet 2>/dev/null; then
       git commit -q -m "typed-loop: iter $ITERATION checkpoint (fails=$FAILS)" >/dev/null 2>&1 || true
       CUR=$(git rev-parse HEAD 2>/dev/null || echo "$CUR")
@@ -189,8 +190,12 @@ if git_here; then
     RATCHET_NOTE="Progress: failures $LAST_FAIL_COUNT → $FAILS. Checkpoint committed as last-good ($CUR)."
   elif [[ "$FAILS" -gt "$LAST_FAIL_COUNT" ]]; then
     # REGRESSION: measure increased → revert the ratchet to last-good.
+    # Protect the loop's own state file across the hard reset (it must survive
+    # even if some earlier `git add -A` swept it into a tracked commit).
     if [[ -n "$LAST_GOOD_SHA" ]]; then
+      _tl_save=$(mktemp); cp "$STATE_FILE" "$_tl_save"
       git reset --hard "$LAST_GOOD_SHA" >/dev/null 2>&1 || true
+      cp "$_tl_save" "$STATE_FILE"; rm -f "$_tl_save"
       RATCHET_NOTE="REGRESSION reverted: failures rose $LAST_FAIL_COUNT → $FAILS, so the working tree was reset --hard to last-good ($LAST_GOOD_SHA). The loop never walks backward. Take a DIFFERENT approach this iteration."
     else
       RATCHET_NOTE="Regression (failures $LAST_FAIL_COUNT → $FAILS) but no last-good checkpoint to revert to yet."

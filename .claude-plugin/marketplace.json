@@ -1,11 +1,20 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "tap",
-  "description": "Leo's private marketplace for the taprun plugin — engineering methodology skills derived from first principles.",
+  "description": "Leo's private marketplace: taprun (engineering methodology skills) + typed-loop (well-typed agentic loop), derived from first principles.",
   "owner": {
     "name": "Leo"
   },
   "plugins": [
+    {
+      "name": "typed-loop",
+      "description": "A well-typed agentic loop — the typed successor to ralph-loop. The stop condition is an external verify command's exit code, not the agent's self-judged promise. Ships a deterministic ratchet (git checkpoint + revert-on-regression), a decreasing failure measure, red-team-until-dry, and an honest human gate for unformalizable acceptance. Moves the oracle out of the agent's token stream.",
+      "source": "./plugins/typed-loop",
+      "category": "development",
+      "author": {
+        "name": "Leo"
+      }
+    },
     {
       "name": "taprun",
       "description": "Engineering methodology skills derived from first principles: verify (deterministic verification gates), constraint-driven-development (RED→GREEN→Why), engineering-philosophy (12-fact framework for architecture and product tradeoffs), writing-plans (intent-verification decomposition), writing-adrs (ADR discipline — 6 principles + pre-commit checklist, language-agnostic), run-task (semi-autonomous task execution), demand-archaeologist (evidence-based demand discovery).",

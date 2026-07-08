@@ -351,13 +351,26 @@ Run gates strongest-to-weakest. If any earlier gate fails, fix and re-run from t
 ```
 1. typecheck (L1)        — no type errors
 2. unit / property tests — local-repo's testsuite, all green
-3. architecture tests    — L4 grep gates on the editing repo
-4. cross-repo grep       — when applicable per the table above
-5. peer-repo testsuite   — when applicable per the table above
-6. demo (Phase 4b)       — operational behavior matches the claim
+3. mutation gate         — Safety / what-x-what constraints: no surviving mutants (see below)
+4. architecture tests    — L4 grep gates on the editing repo
+5. cross-repo grep       — when applicable per the table above
+6. peer-repo testsuite   — when applicable per the table above
+7. demo (Phase 4b)       — operational behavior matches the claim
 ```
 
-A green editing-repo testsuite is NOT sufficient when steps 4 and 5 are applicable. Skipping them is the canonical "claim too soon" failure (Phase 1a category).
+A green editing-repo testsuite is NOT sufficient when steps 5 and 6 are applicable. Skipping them is the canonical "claim too soon" failure (Phase 1a category).
+
+### Phase 4 — Mutation gate (completeness, mechanized)
+
+A green suite proves *your* tests pass their *own* inputs. It says nothing about the constraint you **forgot to write** — and the dominant real-world failure is exactly that missing property (the bug lives where you never looked; the green check is loud about what you specified and silent about what you didn't). Phase 1a hunts the surviving wrong-implementation with a *mental* sentence. The **mutation gate makes a machine hunt it instead.**
+
+> **Mechanize Phase 1a: mutate the implementation (flip a conditional, delete a branch, change a constant, swap a boundary), and check that *some* constraint kills each mutant.** A **surviving mutant** is a wrong implementation your entire constraint set accepts — i.e. a hole in the *constraints*, not in line coverage. Fix it by adding the RED that kills it, not by chasing a coverage number.
+
+- **Tools:** Stryker (TS/JS), mutmut / cosmic-ray (Python), PIT (JVM), `cargo-mutants` (Rust).
+- **Scope it — do not run it on everything.** Gate **Safety** and **what-x-what** constraints (where a missing property destroys or corrupts value). Quality/Delight logic rarely earns the runtime cost. Mutation testing is slow; target it, don't carpet it.
+- **A surviving mutant on a Safety path blocks release** the same way a failing test does — it is a named, reproducible missing constraint, not a warning.
+
+This is the proactive, mechanical form of Phase 7's post-mortem: instead of waiting for a real user to find the implementation your constraints failed to reject, a mutant *is* that implementation, found in CI.
 
 ---
 
@@ -387,6 +400,8 @@ If your change touches multiple domains:
 3. Verify existing cross-domain tests still pass
 
 Cross-domain interactions are the most dangerous blind spot — a single rule can be correct while two correct rules interacting produce incorrect behavior.
+
+**When the interaction is stateful, ordered, or concurrent** (refund-vs-restock race, retry-vs-idempotency, event ordering, two writers on one aggregate), a single what-x-what *point* test checks one interleaving out of many and passes by luck of ordering. The right tool is a **schedule-exploring check**: make the interaction deterministic (funnel time / randomness / ordering through one seed), then let the runner explore many interleavings against an invariant — the deterministic-simulation form of a property test. Even a lightweight version (a seeded loop that shuffles the operation order and re-asserts the invariant each time, dumping the seed on failure) catches the ordering-dependent bug a fixed-sequence test structurally cannot. Reserve this for stateful interactions where a wrong interleaving destroys value; a pure functional what-x-what does not need it.
 
 ---
 
@@ -440,16 +455,20 @@ Post-mortem is the layer that makes CDD *evolve*. Without it, the test suite fre
 ```
 Phase 0   scope analysis (skip if single-module, well-tested)
           + cross-repo: list all peer repos that consume the surface you're touching
-Phase 1   RED     — write failing test
-                    BEFORE the test, ask: "can the type system enforce this?"
-                    If yes, skip the test entirely (L1 > L2)
+Phase 1   TRIAGE  — is the referent FORMAL or a HUMAN/reality judgment?
+                    human → L0 gate (named judge + cadence), NOT a test (false precision)
+          RED     — formal referent: write failing test
+                    BEFORE the test, ask: "can the type system enforce this?" (L1 > L2)
+                    weight the rung by churn: don't over-encode volatile rules
 Phase 1a ADVERSARIAL — write the "half-implementation shortcut" sentence
                       reject affirmative / mirrored / self-fulfilling tests
-Phase 1b ANCHOR   — at external boundaries, RED input = captured real fixture,
-                    not a hand-typed synthetic (independence property)
+Phase 1b ANCHOR   — external boundary: RED input = captured real fixture (not synthetic)
+          INDEPENDENCE — Safety/what-x-what: spec-author ≠ impl-author;
+                         red-team pass when a violation is irreversible
 Phase 2   GREEN   — minimum implementation
-Phase 3   Why     — business reason + audit date
-Phase 4   Verify  — typecheck, lint, tests, architecture (editing repo)
+          eyeball the shrunk counterexample: bug, or over-strong property?
+Phase 3   Why     — business reason + audit date + validity envelope (assumed range)
+Phase 4   Verify  — typecheck, tests, MUTATION gate (Safety/what-x-what), architecture
                     + cross-repo: peer-repo testsuites + grep gate when applicable
 Phase 4b  SHOW    — stdin/stdout, curl, screenshot, or data diff
                     "I ran X and observed Y" > "tests pass"
@@ -460,9 +479,13 @@ Phase 7   Post-mortem (triggered when real-world failure bypasses the suite)
           new RED → audit why original missed → fix → generalize
 ```
 
-The six failure modes CDD rejects by construction:
+The failure modes CDD rejects by construction:
 - *Claim too soon* — blocked by Phase 1a (adversarial sentence)
 - *Claim on imagined inputs* — blocked by Phase 1b (ground-truth anchor at external boundaries)
+- *Claim via a co-authored spec* — blocked by Phase 1b (author independence: spec-author ≠ impl-author + red-team)
+- *Claim with false precision* — blocked by Phase 1 triage (unformalizable referent → L0 human gate, not a fake test)
+- *Claim on an incomplete constraint set* — blocked by Phase 4 mutation gate (a machine hunts the surviving wrong impl)
+- *Claim outside the envelope* — blocked by Phase 3 validity envelope (leaving the assumed range signals, not silently passes)
 - *Claim without demo* — blocked by Phase 4b (SHOW)
 - *Claim without cross-repo verify* — blocked by Phase 4 (peer-repo gate + grep)
 - *Claim with hidden duplication* — blocked by Phase 6 (3rd-repetition abstraction review)
@@ -494,3 +517,4 @@ For this skill to work well, your project should define in CLAUDE.md:
 2. **Test framework and tag system** (Vitest tags, Jest docblocks, pytest markers, etc.)
 3. **How to run tests by tag** (e.g., `vitest --tagsFilter safety`, `pytest -m safety`)
 4. **Verification commands** (typecheck, lint, tests — used in Phase 4)
+5. **Mutation-test command + scope** (e.g., `stryker run` / `mutmut run`, restricted to Safety-tagged modules — used in the Phase 4 mutation gate; omit if the project opts out)

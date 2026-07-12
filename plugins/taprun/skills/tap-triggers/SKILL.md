@@ -37,11 +37,26 @@ triggers (`visibility-recheck.am.trigger.json`, `…pm.trigger.json`).
     // "interval_seconds": 3600                  // StartInterval (>= 60)
     // "watch_path": "~/Downloads"               // WatchPaths (fires on change)
   },
+  "sink": {                                 // optional, WHERE the result lands
+    "path": "~/.tap/ledger/{name}-{date}.json",  // {date}{site}{name}{run_id}
+    "select": "return"                      // return | envelope | return.<field>…
+  },
+  "on": {                                   // optional, unified subscriptions
+    "ok":     [ { "write": "...", "select": "..." } ],   // sink 是 ok.write 的糖
+    "failed": [ { "notify_os": "🛑 扫描失败,看 log" } ]   // run 死后只有这里能反应
+  },
   "note": "why this trigger exists",       // optional, lands as plist comment
   "disabled": true                          // optional; keeps the declaration,
                                             // materializer treats plist as orphan
 }
 ```
+
+**`on` 语义**（ADR invocation-layer amendment）：run outcome 是事件，`on` 是它的
+声明式订阅者。ok 侧点火条件 = committed 且 `return.outcome` 缺失或 "ok"（与 sink
+写入闸完全一致）；failed 侧 = 其余一切——**包括 committed 但 outcome 非 ok**（read-
+outcome 失败即失败事件）。动词闭集 write | notify_os；`run`（链式触发另一 tap）是
+FUTURE，按名拒绝直到有命名消费者。notify_os 走 osascript argv 传参（不可注入），
+不依赖 Chrome——这恢复了原 tap-kb-notify.sh 🛑 abort 横幅的能力。
 
 ## Usage
 

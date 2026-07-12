@@ -45,14 +45,26 @@ triggers (`visibility-recheck.am.trigger.json`, `…pm.trigger.json`).
 
 ## Usage
 
+> **v2 (2026-07-12): the materializer was PROMOTED into core as the 5th
+> admin verb** — ADR `2026-07-12-invocation-layer-trigger-sink-schedule`.
+> The v1 skill-layer `scripts/materialize.ts` is retired; its 10 constraint
+> tests live on as `core/src/test/schedule_test.ts` (+ sink constraints).
+> This skill remains the declaration-format guide.
+
 ```bash
 # Compile all declarations → ~/Library/LaunchAgents/dev.taprun.trigger.*.plist
-deno run --allow-all scripts/materialize.ts            # report as JSON, exit 1 on any refusal
+tap schedule            # report as JSON, exit 1 on any refusal
 
 # Remove plists whose declaration is gone/disabled
-deno run --allow-all scripts/materialize.ts --prune
+tap schedule --prune
 
-# Activate / fire / remove (launchd side — materializer only writes files)
+# Sink (WHERE the committed result lands) — per-trigger:
+#   "sink": { "path": "~/.tap/ledger/{name}-{date}.json", "select": "return" }
+# select: return (default) | envelope | return.<field>...  string → raw bytes
+# Failure writes NOTHING (absence = GAP signal). Same flags exist ad hoc:
+#   tap <site>/<name> --out <tmpl> --select return.markdown
+
+# Activate / fire / remove (launchd side — `tap schedule` only writes files)
 launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.taprun.trigger.<site>.<name>.plist
 launchctl kickstart -k gui/$(id -u)/dev.taprun.trigger.<site>.<name>   # fire NOW
 launchctl bootout   gui/$(id -u)/dev.taprun.trigger.<site>.<name>
@@ -94,10 +106,11 @@ envelope — same as running the tap by hand).
 
 ## Boundaries (recorded so nobody "improves" this wrongly)
 
-- **Do NOT promote to a `tap schedule` engine verb yet.** Re-introduction bar
-  (mirrors the paid-tier ADR discipline): ≥3 live declarations from real use +
-  an ADR in core. Until then this stays skill-layer glue. (v1 had `schedule`;
-  it died with zero consumers — don't rebuild speculation.)
+- **Promotion bar was met and executed 2026-07-12**: ≥3 live declarations
+  (visibility-recheck + weixin ledger + kb lanes) + ADR
+  `2026-07-12-invocation-layer-trigger-sink-schedule` → `tap schedule` is the
+  5th admin verb in core. (The bar existed because v1's `schedule` died with
+  zero consumers — this time consumers came first.)
 - **Do NOT add a scheduler loop to the engine** — see derivation above.
 - **Do NOT auto-bootstrap into launchd from the materializer.** Writing files
   is idempotent and reviewable; mutating launchd state is a separate, human-

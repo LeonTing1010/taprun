@@ -1,6 +1,6 @@
 ---
-name: zhuanshou-map
-description: 把一个点子/机会钉在「赚守图」两轴上——好不好赚(需求流动性 L0–L3)× 守不守得住(复利性 C0–C3)——判定它是"该扑的兔子"还是"该造的品牌",输出坐标+区位+姿势+下一步。核心不是四象限打分,而是三条会推翻天真 2×2 的结构律:两轴负相关(高流动招来侵蚀复利的力量→右上 L3×C3 是结构性禁区,可达区只是反对角带)、每个点带时间箭头(靠"服务方不作为"的护城河是倒计时)、复利要标主语(产品 vs 运营者,同一机会两个 Y)。是 demand-archaeologist(挖证据)和 probe-first(排验证)的定位层伙伴:那两个决定"值不值得做/怎么最省地验",这个决定"做出来能不能守住、该用什么姿势做"。Use when the user has an idea/product/market and asks whether it's defensible, whether to chase-fast-or-build-a-brand, where its moat is, or why something "没有护城河". TRIGGER on "该扑还是该造", "有没有护城河", "moat 在哪", "这个守得住吗", "好不好赚守不守得住", "赚守图", "需求流动性", "复利性", "chase or build", "is this defensible", "where's the moat".
+name: loom
+description: 把一个点子/机会钉在「生意经纬图(LOOM)」两轴上——好不好赚=经(需求流动性 L0–L3)× 守不守得住=纬(复利性 C0–C3)——两根线交织成布(1+1>2),判定它是"该扑的兔子"还是"该造的品牌",输出坐标+织出什么布(命)+姿势+下一步。核心不是四象限打分,而是三条会推翻天真 2×2 的结构律:两轴负相关(高流动招来侵蚀复利的力量→右上 L3×C3 是结构性禁区,可达区只是反对角带)、每个点带时间箭头(靠"服务方不作为"的护城河是倒计时)、复利要标主语(产品 vs 运营者,同一机会两个 Y)。是 demand-archaeologist(挖证据)和 probe-first(排验证)的定位层伙伴:那两个决定"值不值得做/怎么最省地验",这个决定"做出来能不能守住、该用什么姿势做"。Use when the user has an idea/product/market and asks whether it's defensible, whether to chase-fast-or-build-a-brand, where its moat is, or why something "没有护城河". TRIGGER on "生意经纬图", "LOOM", "经纬图", "该扑还是该造", "有没有护城河", "moat 在哪", "这个守得住吗", "好不好赚守不守得住", "赚守图", "需求流动性", "复利性", "chase or build", "is this defensible", "where's the moat".
 argument-hint: '[the idea/product/market in one sentence]'
 license: MIT
 metadata:
@@ -8,11 +8,11 @@ metadata:
   version: '1.0.0'
 ---
 
-# 赚守图 · Zhuanshou Map
+# 生意经纬图 · LOOM
 
-> 任何生意拆到底就两个问句,没有第三个:**能拿到第一块钱吗**(需求)× **第二块钱比第一块省吗**(复利/护城河)。「好不好赚 × 守不守得住」就是这两问的连续刻度版。这把尺不告诉你"有没有护城河",它告诉你**护城河在不在你够得到的地方、用什么姿势去做**。
+> 任何生意拆到底就两个问句,没有第三个:**能拿到第一块钱吗**(需求)× **第二块钱比第一块省吗**(复利/护城河)。「好不好赚 × 守不守得住」就是这两问的连续刻度版——**好赚是经、守得住是纬**,单拉一根都是松线,两根**交织**才织出一块可卖可守会复利的布(1+1>2)。这把尺不告诉你"有没有护城河",它告诉你**护城河在不在你够得到的地方、用什么姿势去织**。
 
-这个 skill 防的错误,是我反复犯过的那种:**把护城河架高一个抽象层去讲**("无 API"、"凭证局部性"),然后被一个理性对手随时间化解。赚守图强制你把机会钉成**带坐标、带时间箭头、标了主语**的一个点,而不是一句口号。
+这个 skill 防的错误,是我反复犯过的那种:**把护城河架高一个抽象层去讲**("无 API"、"凭证局部性"),然后被一个理性对手随时间化解。LOOM 强制你把机会钉成**带坐标、带时间箭头、标了主语**的一个交织点(=一块布的命),而不是一句口号。
 
 ## 两轴 = 两把独立的尺
 

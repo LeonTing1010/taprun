@@ -1,0 +1,8 @@
+{
+  "name": "tap",
+  "version": "0.1.0",
+  "description": "Local-first authenticated browser automation — the Tap MCP server + the tap-capture-replay skill, bundled. Record a repeated logged-in browser task once; replay it forever in your own Chrome as a deterministic program at zero LLM tokens. Credentials never leave your machine; the AI runs only at capture time.",
+  "author": {
+    "name": "LeonTing1010"
+  }
+}

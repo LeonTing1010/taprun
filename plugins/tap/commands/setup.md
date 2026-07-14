@@ -20,3 +20,8 @@ automated: it's the trust boundary that lets Tap reuse your existing logged-in
 session. Tap never asks for or transmits credentials.
 
 When it finishes, run `/reload-plugins` if the Tap MCP tools aren't connected yet.
+
+> Prefer adaptive setup? Just tell the agent "set up tap for this logged-in
+> site" — the **tap-setup** skill diagnoses the prerequisite ladder with
+> `tap embed --verify` and fixes only what's missing, instead of running the
+> full script blind. This command stays as the explicit one-shot entry.

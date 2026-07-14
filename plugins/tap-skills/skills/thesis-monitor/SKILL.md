@@ -1,6 +1,6 @@
 ---
 name: thesis-monitor
-description: Encode your analytical framework as composite Tap plans (sensors × thresholds × framework-doc anchors) and let launchd run them deterministically with zero LLM tokens per scan. For framework-driven thinkers (macro analysts / quant retail / Obsidian PKM power-users / indie founders tracking KPIs against thesis) who want their beliefs machine-auditable without sending watchlists to a cloud SaaS. TRIGGER when user wants to "monitor my thesis", "track invariants", "alert when threshold breached", "personal observability", "framework as code", "thesis as code", "把判据自动化", "把假设编码", "卢氏造尺监控", or describes manually copy-pasting sensor data into a spreadsheet/Obsidian to check against rules.
+description: Encode your analytical framework as composite Tap plans (sensors × thresholds × framework-doc anchors) and let launchd run them deterministically with zero LLM tokens per scan. For framework-driven thinkers (macro analysts / quant retail / Obsidian PKM power-users / indie founders tracking KPIs against thesis) who want their beliefs machine-auditable without sending watchlists to a cloud SaaS. TRIGGER when user wants to "monitor my thesis", "track invariants", "alert when threshold breached", "personal observability", "framework as code", "thesis as code", "encode my criteria", "make my thesis machine-auditable", or describes manually copy-pasting sensor data into a spreadsheet/Obsidian to check against rules.
 license: MIT
 metadata:
   author: LeonTing1010
@@ -51,7 +51,7 @@ L3 ── OS scheduler (launchd / systemd)
        Calendar-driven; one plist per (lane × time slot)
 ```
 
-**No new file formats.** `.plan.json` *is* your declarative thesis config — JSONata-native, MCP-discoverable, `tap doctor` audits drift, `tap run` is the runner.
+**No new file formats.** `.plan.json` *is* your declarative thesis config — JSONata-native, MCP-discoverable, `tap verify` audits drift, `tap run` is the runner.
 
 ## The discipline (read before authoring)
 
@@ -146,10 +146,10 @@ For non-saved-tap sources (raw JSON API), use `op:fetch` directly:
 
  $b_lu := $lu_neg < -8
    ? [{ 'sev': 'RED', 'sensor': 'lu_neg_real', 'val': $lu_neg,
-        'doc': '[[R_4#T1-trigger]]', 'msg': '卢氏负利率 < -8% R_4 T1 True' }]
+        'doc': '[[R_4#T1-trigger]]', 'msg': 'real rate < -8% — R_4 T1 True' }]
    : ($lu_neg < -5
        ? [{ 'sev': 'YELLOW', 'sensor': 'lu_neg_real', 'val': $lu_neg,
-            'doc': '[[R_4#T1-watch]]', 'msg': '卢氏负利率 < -5% approaching' }]
+            'doc': '[[R_4#T1-watch]]', 'msg': 'real rate < -5% — approaching' }]
        : []);
 
  $b_debt := $debt > 130
@@ -231,7 +231,7 @@ cat ~/Library/Logs/tap-kb/scan-redflag.log  # should show fresh digest
 | Write thresholds without `doc:` anchor | R2 copy-drift returns; framework belief and scan rule must cross-reference |
 | Let a null / failed / stale sensor read as "no breach" | Silent-green: a dead feed reports all-clear and you trust it *because* it never alarms (the FRED 504 class). Add presence + freshness + shape guards; a missing sensor is itself a breach |
 | Use `op:parallel` for the sensor list | `save` keys flatten into array — breaks named JSONata access. Sequential is fine for daily cadence |
-| Try to add `op:notify` to Tap core | 11-op union is closed per ADR + S1 architecture test. Notify lives in wrapper, by design |
+| Assume notification must live in the bash wrapper | `op:notify` is already in the closed 16-op union (ADR 2026-07-08) — you can notify from the plan directly; the wrapper below is one valid alternative for custom digests, not a requirement |
 | Write to `~/Documents/Obsidian/...` from launchd-spawned scripts | macOS TCC blocks it silently. Use `~/Library/Logs/` + `~/.tap/` (both TCC-free). Render Obsidian-visible content only from terminal-launched (FDA inherited) contexts |
 | Try to monetize this as a product | See [[demand_archaeology_graveyard]] 2026-05-13 — n=50+ engaged commenters across 4 thread types, 0 WTP. Audience is DIY-forever. Build for self + share free. |
 
@@ -247,6 +247,6 @@ cat ~/Library/Logs/tap-kb/scan-redflag.log  # should show fresh digest
 
 - `/thesis-monitor verify <plan>` — runs `tap verify <plan>` + lints `doc:` anchors against Obsidian vault headings
 - `/thesis-monitor scaffold <area> <lane> <schedule>` — generates a plan template + plist from skeleton
-- `/thesis-monitor doctor` — checks for: orphan plan files, drifted anchors, unscheduled lanes, dead launchd jobs
+- `/thesis-monitor audit` — checks for: orphan plan files, drifted anchors, unscheduled lanes, dead launchd jobs
 
 (Slash commands not implemented in v0.1.0 — manual authoring only. PRs welcome.)

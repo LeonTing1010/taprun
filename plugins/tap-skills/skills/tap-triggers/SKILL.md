@@ -1,6 +1,6 @@
 ---
 name: tap-triggers
-description: Declare WHEN a saved tap runs unattended — ~/.tap/triggers/ trigger.json declarations compiled idempotently into launchd plists (dev.taprun.trigger.* namespace), zero LLM tokens per fire. Foreground-gated plans (trusted:true) are refused at declaration time. Use when the user wants a tap to run on a schedule / on file change ("每天跑这个tap", "定时查回", "schedule this tap", "把xx挂到launchd", "tap触发器"). NOT for Claude Code routines/cron (those wake an agent and burn tokens per fire) — this is the zero-token trigger layer for already-compiled plans.
+description: Declare WHEN a saved tap runs unattended — ~/.tap/triggers/ trigger.json declarations compiled idempotently into launchd plists (dev.taprun.trigger.* namespace), zero LLM tokens per fire. Foreground-gated plans (trusted:true) are refused at declaration time. Use when the user wants a tap to run on a schedule / on file change ("run this tap every day", "check back on a schedule", "schedule this tap", "put this on launchd", "tap trigger"). NOT for Claude Code routines/cron (those wake an agent and burn tokens per fire) — this is the zero-token trigger layer for already-compiled plans.
 ---
 
 # tap-triggers — the trigger layer above plans
@@ -42,8 +42,8 @@ triggers (`visibility-recheck.am.trigger.json`, `…pm.trigger.json`).
     "select": "return"                      // return | envelope | return.<field>…
   },
   "on": {                                   // optional, unified subscriptions
-    "ok":     [ { "write": "...", "select": "..." } ],   // sink 是 ok.write 的糖
-    "failed": [ { "notify_os": "🛑 扫描失败,看 log" } ]   // run 死后只有这里能反应
+    "ok":     [ { "write": "...", "select": "..." } ],   // sink is sugar for ok.write
+    "failed": [ { "notify_os": "🛑 scan failed — check the log" } ]  // the only hook after a run dies
   },
   "note": "why this trigger exists",       // optional, lands as plist comment
   "disabled": true                          // optional; keeps the declaration,
@@ -51,12 +51,15 @@ triggers (`visibility-recheck.am.trigger.json`, `…pm.trigger.json`).
 }
 ```
 
-**`on` 语义**（ADR invocation-layer amendment）：run outcome 是事件，`on` 是它的
-声明式订阅者。ok 侧点火条件 = committed 且 `return.outcome` 缺失或 "ok"（与 sink
-写入闸完全一致）；failed 侧 = 其余一切——**包括 committed 但 outcome 非 ok**（read-
-outcome 失败即失败事件）。动词闭集 write | notify_os；`run`（链式触发另一 tap）是
-FUTURE，按名拒绝直到有命名消费者。notify_os 走 osascript argv 传参（不可注入），
-不依赖 Chrome——这恢复了原 tap-kb-notify.sh 🛑 abort 横幅的能力。
+**`on` semantics** (ADR invocation-layer amendment): a run outcome is an event,
+and `on` is its declarative subscriber. The ok side fires when the run is
+committed AND `return.outcome` is absent or "ok" (identical to the sink write
+gate); the failed side is everything else — **including committed-but-outcome-
+not-ok** (a read-outcome failure is a failure event). The verb set is closed:
+`write | notify_os`. `run` (chaining another tap) is FUTURE — refused by name
+until a named consumer exists. `notify_os` passes arguments via osascript argv
+(injection-safe) and does not depend on Chrome — restoring the 🛑 abort-banner
+capability of the notify wrapper.
 
 ## Usage
 

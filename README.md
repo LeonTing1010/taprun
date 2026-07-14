@@ -65,8 +65,10 @@ drives it), or run the command:
 /tap:setup
 ```
 
-It installs the CLI, registers the Chrome bridge, and opens the extension page.
-Then click **Add to Chrome** and accept the permission prompt — that one click is
+It registers the Chrome bridge — materializing the stable local binary from the
+engine `npx` already downloaded for the MCP server, so there's **no second
+download** — and opens the extension page. Then click **Add to Chrome** and
+accept the permission prompt: that one click is the only real manual step, and
 the trust boundary that lets Tap reuse your existing login. Tap never asks for or
 transmits credentials.
 

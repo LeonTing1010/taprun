@@ -47,11 +47,12 @@ That's it for **public pages and open APIs** — the MCP server runs over `npx`,
 nothing else to install.
 
 > **First connection is a one-time download.** The very first time the Tap MCP
-> server starts, `npx` fetches the engine (~50 MB) before it can answer — the
-> initial connect can take up to a minute on a slow link. Every run after that
-> is instant and fully offline. If the Tap tools aren't connected yet (or the
-> first connect timed out), run `/reload-plugins` — the second attempt is fast
-> because the engine is already cached.
+> server starts, `npx` fetches the engine (~50 MB) before it can answer, so the
+> initial connect can take up to a minute on a slow link. Claude Code waits for
+> it rather than failing, and every run after that is instant and fully offline.
+> If the Tap tools still aren't connected, run `/reload-plugins` — the retry is
+> fast because the engine is already cached. On a very slow link you can give the
+> first connect extra headroom by launching with `MCP_TIMEOUT=120000 claude`.
 
 ### Logged-in sites — one extra step
 

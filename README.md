@@ -47,12 +47,6 @@ That's it for **public pages and open APIs** — the MCP server runs over `npx`,
 nothing else to install. Run `/reload-plugins` if the Tap tools aren't connected
 yet.
 
-Optionally add the companion skills:
-
-```
-/plugin install tap-skills@taprun
-```
-
 ### Logged-in sites — one extra step
 
 To reuse your authenticated session (bank / internal dashboard / social), the
@@ -69,23 +63,16 @@ Then click **Add to Chrome** and accept the permission prompt — that one click
 the trust boundary that lets Tap reuse your existing login. Tap never asks for or
 transmits credentials.
 
-## What's in the marketplace
-
-### `tap` — the product plugin
+## What's in the `tap` plugin
 
 | Component | What it does |
 |---|---|
 | **Tap MCP server** | 4 meta verbs — `capture` / `verify` / `mark` / `run` — plus your saved taps exposed as MCP resources (`tap://{site}/{name}`). Runs via `npx @taprun/cli mcp stdio`. |
 | **tap-capture-replay** skill | Teaches the agent to reach for Tap when a browser task is *repeated* and *logged-in* — record once, replay at zero tokens. |
 | **tap-setup** skill | Adaptive, diagnose-first setup for logged-in sites (`tap embed --verify` → fix only what's missing). |
+| **tap-triggers** skill | Declare *when* a saved tap runs unattended — `~/.tap/triggers/*.trigger.json` compiled into launchd jobs, zero tokens per fire. |
 | **WebFetch → tap routing hook** | On auth/bot-walled hosts where a cloud fetch can't see logged-in content, redirects the agent to Tap instead of hitting the wall. |
 | **/tap:setup** command | The explicit one-shot login-site setup entry. |
-
-### `tap-skills` — companion
-
-| Skill | What it does |
-|---|---|
-| **tap-triggers** | Declare *when* a saved tap runs unattended — `~/.tap/triggers/*.trigger.json` compiled into launchd jobs, zero tokens per fire. |
 
 ## How it works
 
@@ -124,8 +111,7 @@ and restart Claude Code:
     "taprun": { "source": { "source": "github", "repo": "LeonTing1010/taprun" }, "autoUpdate": true }
   },
   "enabledPlugins": {
-    "tap@taprun": true,
-    "tap-skills@taprun": true
+    "tap@taprun": true
   }
 }
 ```
@@ -136,15 +122,14 @@ and restart Claude Code:
 taprun/
 ├── .claude-plugin/marketplace.json     marketplace manifest
 ├── plugins/
-│   ├── tap/                            the product plugin
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── .mcp.json                   MCP server (npx @taprun/cli mcp stdio)
-│   │   ├── commands/setup.md           /tap:setup
-│   │   ├── hooks/                      WebFetch → tap routing hook
-│   │   ├── scripts/tap-setup.sh
-│   │   └── skills/{tap-capture-replay, tap-setup}/SKILL.md
-│   └── tap-skills/                     companion skills
-│       └── skills/tap-triggers/SKILL.md
+│   └── tap/                            the product plugin
+│       ├── .claude-plugin/plugin.json
+│       ├── .mcp.json                   MCP server (npx @taprun/cli mcp stdio)
+│       ├── commands/setup.md           /tap:setup
+│       ├── hooks/                      WebFetch → tap routing hook
+│       ├── scripts/tap-setup.sh
+│       └── skills/{tap-capture-replay, tap-setup, tap-triggers}/SKILL.md
+├── LICENSE
 └── README.md
 ```
 

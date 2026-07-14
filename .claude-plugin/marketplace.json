@@ -8,17 +8,8 @@
   "plugins": [
     {
       "name": "tap",
-      "description": "Local-first authenticated browser automation. Bundles the Tap MCP server (capture/verify/mark/run + saved taps as resources), the tap-capture-replay + tap-setup skills, and a WebFetch→tap routing hook. Record a repeated logged-in browser task once; replay it forever in your own Chrome as a deterministic program at zero LLM tokens — credentials never leave your machine. For logged-in sites, run /tap:setup (installs the CLI + Chrome bridge, opens the extension page).",
+      "description": "Local-first authenticated browser automation. Bundles the Tap MCP server (capture/verify/mark/run + saved taps as resources), the tap-capture-replay + tap-setup + tap-triggers skills, and a WebFetch→tap routing hook. Record a repeated logged-in browser task once; replay it forever in your own Chrome as a deterministic program at zero LLM tokens — credentials never leave your machine. For logged-in sites, run /tap:setup (installs the CLI + Chrome bridge, opens the extension page).",
       "source": "./plugins/tap",
-      "category": "automation",
-      "author": {
-        "name": "LeonTing1010"
-      }
-    },
-    {
-      "name": "tap-skills",
-      "description": "Skills that work with Tap: tap-triggers (schedule saved taps unattended, zero tokens per fire). Install alongside the tap plugin.",
-      "source": "./plugins/tap-skills",
       "category": "automation",
       "author": {
         "name": "LeonTing1010"

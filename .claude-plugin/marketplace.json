@@ -17,7 +17,7 @@
     },
     {
       "name": "tap-skills",
-      "description": "Skills that work with Tap: tap-triggers (schedule saved taps unattended, zero tokens per fire) and thesis-monitor (encode your analytical framework as composite Tap plans run deterministically). Install alongside the tap plugin.",
+      "description": "Skills that work with Tap: tap-triggers (schedule saved taps unattended, zero tokens per fire). Install alongside the tap plugin.",
       "source": "./plugins/tap-skills",
       "category": "automation",
       "author": {

@@ -1,27 +1,27 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "tap",
-  "description": "Leo's private marketplace: taprun (engineering methodology skills) + typed-loop (well-typed agentic loop), derived from first principles.",
+  "name": "taprun",
+  "description": "Tap — local-first authenticated browser automation. Install the Tap MCP server + the skills that work with it, in one step.",
   "owner": {
     "name": "Leo"
   },
   "plugins": [
     {
-      "name": "typed-loop",
-      "description": "A well-typed agentic loop — the typed successor to ralph-loop. The stop condition is an external verify command's exit code, not the agent's self-judged promise. Ships a deterministic ratchet (git checkpoint + revert-on-regression), a decreasing failure measure, red-team-until-dry, and an honest human gate for unformalizable acceptance. Moves the oracle out of the agent's token stream.",
-      "source": "./plugins/typed-loop",
-      "category": "development",
+      "name": "tap",
+      "description": "Local-first authenticated browser automation. Bundles the Tap MCP server (capture/verify/mark/run + saved taps as resources) and the tap-capture-replay skill. Record a repeated logged-in browser task once; replay it forever in your own Chrome as a deterministic program at zero LLM tokens — credentials never leave your machine. For logged-in sites, run /tap:setup (installs the CLI + Chrome bridge, opens the extension page).",
+      "source": "./plugins/tap",
+      "category": "automation",
       "author": {
-        "name": "Leo"
+        "name": "LeonTing1010"
       }
     },
     {
-      "name": "taprun",
-      "description": "Engineering methodology skills derived from first principles: verify (deterministic verification gates), constraint-driven-development (RED→GREEN→Why), engineering-philosophy (12-fact framework for architecture and product tradeoffs), writing-plans (intent-verification decomposition), writing-adrs (ADR discipline — 6 principles + pre-commit checklist, language-agnostic), run-task (semi-autonomous task execution), demand-archaeologist (evidence-based demand discovery).",
-      "source": "./plugins/taprun",
-      "category": "development",
+      "name": "tap-skills",
+      "description": "Skills that work with Tap: tap-triggers (schedule saved taps unattended, zero tokens per fire) and thesis-monitor (encode your analytical framework as composite Tap plans run deterministically). Install alongside the tap plugin.",
+      "source": "./plugins/tap-skills",
+      "category": "automation",
       "author": {
-        "name": "Leo"
+        "name": "LeonTing1010"
       }
     }
   ]

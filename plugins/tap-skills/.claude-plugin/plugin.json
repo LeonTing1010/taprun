@@ -1,0 +1,8 @@
+{
+  "name": "tap-skills",
+  "version": "0.1.0",
+  "description": "Skills that work with Tap. tap-triggers: declare WHEN a saved tap runs unattended (compiled to launchd, zero tokens per fire). thesis-monitor: encode your analytical framework as composite Tap plans that run deterministically at zero LLM tokens. Install alongside the `tap` plugin.",
+  "author": {
+    "name": "LeonTing1010"
+  }
+}

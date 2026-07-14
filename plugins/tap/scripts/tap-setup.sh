@@ -19,7 +19,9 @@ if command -v tap >/dev/null 2>&1; then
 elif [ -x "$HOME/.tap/bin/tap" ]; then
   TAP="$HOME/.tap/bin/tap"
 else
-  echo "Installing the Tap CLI (needed so the Chrome extension can reach it)…"
+  echo "Installing the Tap CLI so the Chrome extension can reach a stable local binary."
+  echo "Running the official installer from taprun.dev — shown so you see exactly what runs:"
+  echo "  curl -fsSL https://taprun.dev/install.sh | sh"
   curl -fsSL https://taprun.dev/install.sh | sh
   if command -v tap >/dev/null 2>&1; then
     TAP="$(command -v tap)"

@@ -1,46 +1,107 @@
 # taprun
 
-Public Claude Code skills marketplace (MIT). First-principles engineering methodology — demand archaeology, verification gates, plan writing, semi-autonomous task execution.
+**Local-first authenticated browser automation for Claude Code.** Record a
+repeated logged-in browser task once; replay it forever in your own Chrome as a
+deterministic program at **zero LLM tokens** — your credentials never leave your
+machine.
 
-This repository is a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins) containing a single plugin (`taprun`) with 8 skills derived from first principles. All skills are namespaced under `/taprun:` in Claude Code sessions.
+This repository is a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins).
+Adding it gives Claude Code the **Tap** MCP server plus the skills that teach the
+agent when and how to use it. Homepage: [taprun.dev](https://taprun.dev).
 
-## Skills
+## Why Tap is different
 
-| Skill | Purpose |
-|---|---|
-| `verify` | Multi-layer deterministic verification gates (typecheck, architecture, lint, tests) — replaces AI self-assessment |
-| `constraint-driven-development` | RED → GREEN → Why workflow for business logic |
-| `writing-plans` | Intent–verification task decomposition for complex implementations |
-| `run-task` | Semi-autonomous task execution from `task.yaml` — worktree isolation, verification gates, auto PR |
-| `demand-archaeologist` | Evidence-based demand discovery across CN (小红书/微信/知乎) and EN (Reddit/HN/indie) scenes |
-| `engineering-philosophy` | First-principles framework (12 facts + two eternal principles + The Algorithm) for **architecture decisions and product tradeoffs** |
-| `first-principle-audit` | Logical audit — assumption list, probability intervals, stakeholder analysis, rebuild path |
-| `jimeng-generator` | Generate images via 即梦AI through the official `dreamina` CLI |
+Every other browser approach — Stagehand, Browserbase, Playwright-MCP,
+mcp-chrome, Browser MCP — re-runs a live model and re-burns tokens on **every
+execution**, and ships the page (with its logged-in session) to a remote browser
+pool. Tap compiles the plan **once**, at capture time, then replays it
+deterministically:
 
-## Install on a new machine
+- **Zero tokens per run.** The AI participates only while recording; replay is
+  pure data + dispatch.
+- **Credentials never cross a trust boundary.** Replay runs in *your* real
+  Chrome, on *your* existing cookies. Nothing is sent to a cloud browser.
+- **Effect-verified.** Read plans return an honest `{ outcome, reason }`; write
+  plans carry a postcondition, so `ok:true` proving execution is separated from
+  the effect actually landing.
 
-Prerequisite: [Claude Code](https://claude.ai/claude-code) installed.
+## Install
 
-**One-line shell install (recommended):**
+Prerequisite: [Claude Code](https://claude.ai/claude-code).
 
-```bash
-claude plugin marketplace add LeonTing1010/taprun && claude plugin install taprun@tap
-```
-
-Runs from a terminal — no interactive Claude Code session required. Ideal for provisioning new machines or dotfiles scripts.
-
-**Or from inside Claude Code:**
+**From inside Claude Code:**
 
 ```
 /plugin marketplace add LeonTing1010/taprun
-/plugin install taprun@tap
+/plugin install tap@taprun
 ```
 
-Either path clones this repo, installs the plugin, and persists the configuration to `~/.claude/settings.json` automatically. Skills appear as `/taprun:verify`, `/taprun:engineering-philosophy`, etc. Verify with `/skills`.
+**Or from a terminal** (no interactive session needed — good for provisioning /
+dotfiles):
 
-### Recommended: auto-update
+```bash
+claude plugin marketplace add LeonTing1010/taprun && claude plugin install tap@taprun
+```
 
-Edit the marketplace entry Claude Code just wrote to `~/.claude/settings.json` and add `"autoUpdate": true`:
+That's it for **public pages and open APIs** — the MCP server runs over `npx`,
+nothing else to install. Run `/reload-plugins` if the Tap tools aren't connected
+yet.
+
+Optionally add the companion skills:
+
+```
+/plugin install tap-skills@taprun
+```
+
+### Logged-in sites — one extra step
+
+To reuse your authenticated session (bank / internal dashboard / social), the
+Chrome extension needs a stable local binary via a native-messaging bridge. Just
+tell the agent *"set up tap for this logged-in site"* (the **tap-setup** skill
+drives it), or run the command:
+
+```
+/tap:setup
+```
+
+It installs the CLI, registers the Chrome bridge, and opens the extension page.
+Then click **Add to Chrome** and accept the permission prompt — that one click is
+the trust boundary that lets Tap reuse your existing login. Tap never asks for or
+transmits credentials.
+
+## What's in the marketplace
+
+### `tap` — the product plugin
+
+| Component | What it does |
+|---|---|
+| **Tap MCP server** | 4 meta verbs — `capture` / `verify` / `mark` / `run` — plus your saved taps exposed as MCP resources (`tap://{site}/{name}`). Runs via `npx @taprun/cli mcp stdio`. |
+| **tap-capture-replay** skill | Teaches the agent to reach for Tap when a browser task is *repeated* and *logged-in* — record once, replay at zero tokens. |
+| **tap-setup** skill | Adaptive, diagnose-first setup for logged-in sites (`tap embed --verify` → fix only what's missing). |
+| **WebFetch → tap routing hook** | On auth/bot-walled hosts where a cloud fetch can't see logged-in content, redirects the agent to Tap instead of hitting the wall. |
+| **/tap:setup** command | The explicit one-shot login-site setup entry. |
+
+### `tap-skills` — companion
+
+| Skill | What it does |
+|---|---|
+| **tap-triggers** | Declare *when* a saved tap runs unattended — `~/.tap/triggers/*.trigger.json` compiled into launchd jobs, zero tokens per fire. |
+
+## How it works
+
+1. **Check first, don't rebuild.** `resources/list` — a matching saved tap runs
+   with `run({ ref, args })`.
+2. **Capture once.** `capture { url, intent, site, name }` compiles a plan to
+   `~/.tap/plans/<site>/<name>.plan.json`. AI runs only here.
+3. **Replay forever.** `run({ ref, args })` — deterministic, zero tokens. Use
+   `verify` first to confirm the tap hasn't broken from a site redesign.
+
+Saved taps live under `~/.tap/` on your machine and never sync to any cloud.
+
+## Keeping it updated
+
+Auto-update by adding `"autoUpdate": true` to the marketplace entry Claude Code
+wrote in `~/.claude/settings.json`:
 
 ```jsonc
 "extraKnownMarketplaces": {
@@ -51,112 +112,45 @@ Edit the marketplace entry Claude Code just wrote to `~/.claude/settings.json` a
 }
 ```
 
-With `autoUpdate`, new commits on `main` are pulled automatically at session start — no manual `/plugin update` needed.
+New commits on `main` are then pulled at session start. Without it, run
+`/plugin update tap@taprun`.
 
-### Declarative install (dotfiles / automation)
-
-If you manage `~/.claude/settings.json` declaratively (e.g. in a dotfiles repo), you can skip the slash commands and write both sections directly:
+**Declarative install** (dotfiles / automation) — write both sections directly
+and restart Claude Code:
 
 ```jsonc
 {
   "extraKnownMarketplaces": {
-    "taprun": {
-      "source": { "source": "github", "repo": "LeonTing1010/taprun" },
-      "autoUpdate": true
-    }
+    "taprun": { "source": { "source": "github", "repo": "LeonTing1010/taprun" }, "autoUpdate": true }
   },
   "enabledPlugins": {
-    "taprun@tap": true
+    "tap@taprun": true,
+    "tap-skills@taprun": true
   }
 }
 ```
-
-Restart Claude Code after editing.
-
-## Update
-
-With `autoUpdate: true`: automatic on session start.
-
-Without it: `/plugin update taprun` inside Claude Code, or restart.
-
-## Edit & publish new skills
-
-Clone once for local development:
-
-```bash
-git clone https://github.com/LeonTing1010/taprun.git ~/Documents/taprun
-```
-
-Edit skills under `plugins/taprun/skills/<name>/SKILL.md`, commit, push.
-
-New skills: just create a new directory with a `SKILL.md` — no manifest changes required.
-
-## Recommended local setup: auto-commit hook
-
-Pre-rewrite, this repo once accumulated 336 lines of uncommitted edits (full §10 of `engineering-philosophy` + demand-archaeologist Phase 6) because it was nested inside another project's gitignored directory — silently invisible to `git status`. To prevent recurrence on any machine you edit from, install a Claude Code Stop hook that auto-commits the working tree at session end.
-
-Save as `~/.claude/auto-commit-taprun.sh` (chmod +x):
-
-```bash
-#!/bin/bash
-set +e
-cd "$HOME/Documents/taprun" 2>/dev/null || exit 0
-[ -d .git ] || exit 0
-[ -n "$(git status --porcelain 2>/dev/null)" ] || exit 0
-git add -A >/dev/null 2>&1
-git commit -m "wip: skill edits $(date '+%Y-%m-%d %H:%M')" >/dev/null 2>&1
-exit 0
-```
-
-Then add to `hooks.Stop[].hooks[]` in `~/.claude/settings.json`:
-
-```json
-{
-  "type": "command",
-  "command": "bash /Users/<you>/.claude/auto-commit-taprun.sh"
-}
-```
-
-Every session that touches a skill now ends with a `wip: …` commit. Amend, squash, or push at your leisure. Push is still manual — the hook does not broadcast.
 
 ## Directory layout
 
 ```
 taprun/
-├── .claude-plugin/
-│   └── marketplace.json            marketplace manifest (required)
+├── .claude-plugin/marketplace.json     marketplace manifest
 ├── plugins/
-│   └── taprun/
-│       ├── .claude-plugin/
-│       │   └── plugin.json          plugin manifest (required)
-│       └── skills/
-│           ├── verify/SKILL.md
-│           ├── constraint-driven-development/SKILL.md
-│           ├── writing-plans/SKILL.md
-│           ├── run-task/SKILL.md
-│           ├── demand-archaeologist/{SKILL.md, references/*}
-│           ├── engineering-philosophy/{SKILL.md, philosophy.md}
-│           ├── first-principle-audit/SKILL.md
-│           └── jimeng-generator/SKILL.md
-└── README.md                         ← you are here
+│   ├── tap/                            the product plugin
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── .mcp.json                   MCP server (npx @taprun/cli mcp stdio)
+│   │   ├── commands/setup.md           /tap:setup
+│   │   ├── hooks/                      WebFetch → tap routing hook
+│   │   ├── scripts/tap-setup.sh
+│   │   └── skills/{tap-capture-replay, tap-setup}/SKILL.md
+│   └── tap-skills/                     companion skills
+│       └── skills/tap-triggers/SKILL.md
+└── README.md
 ```
 
-## Why plugin marketplace (rationale)
-
-Before the 2026-04 restructure, skills lived as a flat `~/.claude/skills/claude-skills/<name>/SKILL.md` clone. Two failure modes surfaced:
-
-1. **Discovery failure.** Claude Code only scans **direct children** of `~/.claude/skills/` (i.e. `~/.claude/skills/<name>/SKILL.md`). Nested repos like `~/.claude/skills/claude-skills/verify/` were silently invisible — Claude never saw them.
-2. **Uncommitted work loss.** The working copy was nested inside another project's gitignored directory, so running `git status` in the parent project hid all skill edits.
-
-The plugin marketplace mechanism is Claude Code's **native** solution for "one git repo containing multiple skills":
-
-- This repo is the marketplace (analogous to a Homebrew tap)
-- It contains one plugin (`plugins/taprun/`)
-- The plugin contains the skill library
-- Claude Code fetches, installs, caches, and namespaces everything automatically
-
-Result: **two JSON lines in `settings.json` → full skill library on any machine, no path juggling.**
+The product engine (`@taprun/cli`, the Chrome extension, the plan format) lives
+elsewhere; this repo is only the Claude Code distribution glue.
 
 ## License
 
-Private. All rights reserved.
+MIT.

@@ -3,37 +3,41 @@ set -e
 
 # tap:setup — one-shot login-site preparation for Tap.
 # Public pages / open APIs need NONE of this (the bundled MCP server already
-# works over npx). This is only for logged-in sites, where the Chrome
-# extension must reach a STABLE local binary via the native-messaging bridge
-# (the bridge manifest is a no-op under an ephemeral npx path, so a real
-# install is required here).
+# works over npx). This is only for logged-in sites, where the Chrome extension
+# reaches the engine through the native-messaging bridge.
 #
-# Steps: ensure a stable `tap` binary -> register the NM bridge -> open the
+# `tap bridge setup` self-copies the RUNNING binary to a STABLE path
+# (~/.tap/bin/tap) and writes the manifest — so running it FROM npx reuses the
+# exact engine the MCP server already downloaded (byte-identical, same version)
+# with NO second download. curl-install is only a last resort when npx is absent.
+#
+# Steps: register the NM bridge (materializing a stable binary) -> open the
 # Chrome Web Store page (the one manual click = the trust boundary).
 
 CWS="https://chromewebstore.google.com/detail/tap/llcidejeoobdegbkolbjhfoeckphldce"
 
-# 1. Ensure a stable tap binary.
+# 1+2. Register the Chrome bridge, materializing a stable binary in one step.
 if command -v tap >/dev/null 2>&1; then
-  TAP="$(command -v tap)"
+  TAP="$(command -v tap)"                        # already a stable install
 elif [ -x "$HOME/.tap/bin/tap" ]; then
-  TAP="$HOME/.tap/bin/tap"
+  TAP="$HOME/.tap/bin/tap"                        # engine already self-copied here
+elif command -v npx >/dev/null 2>&1; then
+  # Reuse the engine the Tap MCP server already fetched via npx: `bridge setup`
+  # self-copies it to ~/.tap/bin — same bytes, same version, NO second download.
+  echo "Registering the Chrome bridge from the engine npx already has (no second download)…"
+  TAP="npx -y @taprun/cli"
 else
-  echo "Installing the Tap CLI so the Chrome extension can reach a stable local binary."
-  echo "Running the official installer from taprun.dev — shown so you see exactly what runs:"
+  # No npx on PATH — fall back to the standalone installer (shown before it runs).
+  echo "npx not found — installing the Tap CLI from taprun.dev (shown so you see exactly what runs):"
   echo "  curl -fsSL https://taprun.dev/install.sh | sh"
   curl -fsSL https://taprun.dev/install.sh | sh
-  if command -v tap >/dev/null 2>&1; then
-    TAP="$(command -v tap)"
-  else
-    TAP="$HOME/.tap/bin/tap"
-  fi
+  TAP="$HOME/.tap/bin/tap"
 fi
 
-# 2. Register the Chrome native-messaging bridge (idempotent; install.sh and
-#    the MCP server's autoheal also do this — running it here is belt-and-braces).
-if [ -x "$TAP" ] && "$TAP" bridge setup >/dev/null 2>&1; then
-  echo "✓ Chrome bridge registered ($TAP)"
+# Idempotent; the MCP server's startup autoheal also does this — belt-and-braces.
+# shellcheck disable=SC2086  # $TAP may be a multi-word `npx -y @taprun/cli`
+if $TAP bridge setup >/dev/null 2>&1; then
+  echo "✓ Chrome bridge registered (stable binary at ~/.tap/bin/tap)"
 else
   echo "⚠ bridge setup skipped — is Chrome installed? Re-run: $TAP bridge setup"
 fi

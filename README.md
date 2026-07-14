@@ -15,7 +15,7 @@ This repository is a [Claude Code plugin marketplace](https://docs.claude.com/en
 | `demand-archaeologist` | Evidence-based demand discovery across CN (小红书/微信/知乎) and EN (Reddit/HN/indie) scenes |
 | `engineering-philosophy` | First-principles framework (12 facts + two eternal principles + The Algorithm) for **architecture decisions and product tradeoffs** |
 | `first-principle-audit` | Logical audit — assumption list, probability intervals, stakeholder analysis, rebuild path |
-| `jimeng-generator` | Generate images via 即梦AI through `opencli` |
+| `jimeng-generator` | Generate images via 即梦AI through the official `dreamina` CLI |
 
 ## Install on a new machine
 

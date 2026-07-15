@@ -1,5 +1,7 @@
 ---
 name: tap-capture-replay
+slug: tap-capture-replay
+displayName: Tap 录制与确定性重放
 description: >-
   当浏览器任务会"重复做"且发生在"已登录网站"上时，用 Tap 录制一次（capture），之后每次以零
   token 的确定性重放（run）来执行——而不是每次都驱动实时浏览器、反复烧 token。触发场景：用户说"我
@@ -7,8 +9,8 @@ description: >-
   用户还会再做的重复浏览器杂活。也适用于用户问"这能自动化吗""能不能别每次都花 token"。
 version: 1.0.0
 tags: [browser, automation, replay, zero-token, logged-in]
-category: 效率工具        # 待核对：以 skillhub init / 官网表单的实际枚举为准
-platforms: [macos, windows]   # 待核对：Tap 运行于 macOS/Windows + Chromium
+category: 效率工具
+platforms: [macos, windows]
 ---
 
 # Tap：录制一次，零 token 永久重放

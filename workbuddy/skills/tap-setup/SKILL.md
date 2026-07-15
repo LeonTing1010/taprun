@@ -1,5 +1,7 @@
 ---
 name: tap-setup
+slug: tap-setup
+displayName: Tap 登录站点自适应配置
 description: >-
   为"已登录/需认证"的网站自适应地准备 Tap——先诊断、只补缺失的一环、过人类信任闸门，再验证。公开页面/
   开放 API 无需此步（MCP 连上即可用）。触发场景：用户想在需要登录的网站（银行/后台/内部系统/社交）用
@@ -7,8 +9,8 @@ description: >-
   通过 `tap embed --verify` 自适应地驱动设置，而非盲目跑安装器。
 version: 1.1.0
 tags: [setup, login, bridge, chrome-extension]
-category: 效率工具        # 待核对：以 skillhub init / 官网表单的实际枚举为准
-platforms: [macos, windows]   # 待核对：Tap 运行于 macOS/Windows + Chromium
+category: 效率工具
+platforms: [macos, windows]
 ---
 
 # Tap：已登录站点的自适应设置

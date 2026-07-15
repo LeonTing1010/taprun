@@ -1,5 +1,7 @@
 ---
 name: tap-triggers
+slug: tap-triggers
+displayName: Tap 定时触发（launchd）
 description: >-
   声明一个已保存的 tap"何时"无人值守运行——~/.tap/triggers/ 下的 trigger.json 声明会被确定性地编译成
   launchd plist（dev.taprun.trigger.* 命名空间），每次触发零 token。前台受限计划（trusted:true）在声明时
@@ -7,8 +9,8 @@ description: >-
   launchd；Windows 端为同一声明格式下的 systemd 等价物（待实现）。
 version: 1.0.0
 tags: [schedule, trigger, launchd, automation]
-category: 效率工具        # 待核对：以 skillhub init / 官网表单的实际枚举为准
-platforms: [macos, windows]   # 待核对：Tap 运行于 macOS/Windows + Chromium
+category: 效率工具
+platforms: [macos, windows]
 ---
 
 # tap-triggers —— 位于 plan 之上的触发层

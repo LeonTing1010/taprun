@@ -7,7 +7,7 @@ description: >-
   token 的确定性重放（run）来执行——而不是每次都驱动实时浏览器、反复烧 token。触发场景：用户说"我
   每天都要在 X 网站做 Y"；需要抓取/操作登录后的后台或仪表盘；定期在认证页面发帖/查数据/导出；任何
   用户还会再做的重复浏览器杂活。也适用于用户问"这能自动化吗""能不能别每次都花 token"。
-version: 1.0.0
+version: 1.0.1
 license: MIT
 tags: [browser, automation, replay, zero-token, logged-in]
 category: 效率工具

@@ -7,7 +7,7 @@ description: >-
   开放 API 无需此步（MCP 连上即可用）。触发场景：用户想在需要登录的网站（银行/后台/内部系统/社交）用
   Tap；用户说"配置 tap""连接 tap""tap 连不上"；或在已登录站点上运行报错 peer/bridge 不可达。本技能
   通过 `tap embed --verify` 自适应地驱动设置，而非盲目跑安装器。
-version: 1.1.0
+version: 1.1.1
 license: MIT
 tags: [setup, login, bridge, chrome-extension]
 category: 效率工具

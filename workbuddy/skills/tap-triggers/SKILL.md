@@ -8,6 +8,7 @@ description: >-
   即被拒绝。适用于用户想"每天跑这个 tap""定时检查""排个日程""放到 launchd"。注意：当前仅 macOS +
   launchd；Windows 端为同一声明格式下的 systemd 等价物（待实现）。
 version: 1.0.0
+license: MIT
 tags: [schedule, trigger, launchd, automation]
 category: 效率工具
 platforms: [macos, windows]

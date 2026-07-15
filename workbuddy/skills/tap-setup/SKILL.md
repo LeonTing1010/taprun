@@ -7,6 +7,8 @@ description: >-
   通过 `tap embed --verify` 自适应地驱动设置，而非盲目跑安装器。
 version: 1.1.0
 tags: [setup, login, bridge, chrome-extension]
+category: 效率工具        # 待核对：以 skillhub init / 官网表单的实际枚举为准
+platforms: [macos, windows]   # 待核对：Tap 运行于 macOS/Windows + Chromium
 ---
 
 # Tap：已登录站点的自适应设置

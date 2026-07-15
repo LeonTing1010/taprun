@@ -7,6 +7,8 @@ description: >-
   launchd；Windows 端为同一声明格式下的 systemd 等价物（待实现）。
 version: 1.0.0
 tags: [schedule, trigger, launchd, automation]
+category: 效率工具        # 待核对：以 skillhub init / 官网表单的实际枚举为准
+platforms: [macos, windows]   # 待核对：Tap 运行于 macOS/Windows + Chromium
 ---
 
 # tap-triggers —— 位于 plan 之上的触发层

@@ -7,6 +7,8 @@ description: >-
   用户还会再做的重复浏览器杂活。也适用于用户问"这能自动化吗""能不能别每次都花 token"。
 version: 1.0.0
 tags: [browser, automation, replay, zero-token, logged-in]
+category: 效率工具        # 待核对：以 skillhub init / 官网表单的实际枚举为准
+platforms: [macos, windows]   # 待核对：Tap 运行于 macOS/Windows + Chromium
 ---
 
 # Tap：录制一次，零 token 永久重放

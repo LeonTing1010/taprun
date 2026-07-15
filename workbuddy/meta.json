@@ -5,6 +5,6 @@
   "author": { "name": "LeonTing1010" },
   "gitUrl": "https://github.com/LeonTing1010/tap",
   "tags": ["browser-automation", "local-first", "zero-token", "productivity"],
-  "logo": ["REPLACE_WITH_PUBLIC_LOGO_URL"],
+  "logo": ["https://raw.githubusercontent.com/LeonTing1010/tap/main/public/extension/icons/icon128.png"],
   "env_params": {}
 }

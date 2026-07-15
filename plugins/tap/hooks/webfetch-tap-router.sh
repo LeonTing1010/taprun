@@ -59,7 +59,7 @@ if [ -n "$existing" ]; then
   site="$(basename "$(dirname "$existing")")"
   ctx="A saved tap already covers ${host} (site: ${site}). Run \`tap list ${site}\` or check tap:// resources to find it, then replay it via the tap MCP server's run tool (mcp__tap__run, or mcp__plugin_tap_tap__run — whichever tap server is connected) instead of WebFetch."
 else
-  ctx="No saved tap for ${host} yet. WebFetch cannot reach logged-in content here. Capture one via the tap MCP server's capture tool (mcp__tap__capture / mcp__plugin_tap_tap__capture; run /tap:setup first if the site needs login), then replay it at zero tokens."
+  ctx="No saved tap for ${host} yet. WebFetch cannot reach logged-in content here. Capture one via the tap MCP server's capture tool (mcp__tap__capture / mcp__plugin_tap_tap__capture; use the tap-setup skill first if the site needs login), then replay it at zero tokens."
 fi
 reason="WebFetch to ${host} hits an auth/bot wall from the cloud fetch proxy and cannot see logged-in content. tap runs in your own authenticated browser and can. (This gate is taprun's walled-hosts.txt; edit it to adjust.)"
 

@@ -58,12 +58,8 @@ nothing else to install.
 
 To reuse your authenticated session (bank / internal dashboard / social), the
 Chrome extension needs a stable local binary via a native-messaging bridge. Just
-tell the agent *"set up tap for this logged-in site"* (the **tap-setup** skill
-drives it), or run the command:
-
-```
-/tap:setup
-```
+tell the agent *"set up tap for this logged-in site"* — the **tap-setup** skill
+drives it, diagnosing with `tap embed --verify` and fixing only what's missing.
 
 It registers the Chrome bridge — materializing the stable local binary from the
 engine `npx` already downloaded for the MCP server, so there's **no second
@@ -81,7 +77,6 @@ transmits credentials.
 | **tap-setup** skill | Adaptive, diagnose-first setup for logged-in sites (`tap embed --verify` → fix only what's missing). |
 | **tap-triggers** skill | Declare *when* a saved tap runs unattended — `~/.tap/triggers/*.trigger.json` compiled into launchd jobs, zero tokens per fire. |
 | **WebFetch → tap routing hook** | On auth/bot-walled hosts where a cloud fetch can't see logged-in content, redirects the agent to Tap instead of hitting the wall. |
-| **/tap:setup** command | The explicit one-shot login-site setup entry. |
 
 ## How it works
 
@@ -134,9 +129,7 @@ taprun/
 │   └── tap/                            the product plugin
 │       ├── .claude-plugin/plugin.json
 │       ├── .mcp.json                   MCP server (npx @taprun/cli mcp stdio)
-│       ├── commands/setup.md           /tap:setup
 │       ├── hooks/                      WebFetch → tap routing hook
-│       ├── scripts/tap-setup.sh
 │       └── skills/{tap-capture-replay, tap-setup, tap-triggers}/SKILL.md
 ├── LICENSE
 └── README.md

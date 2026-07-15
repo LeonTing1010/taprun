@@ -69,7 +69,7 @@ zero cost"**.
 
 Public pages / open APIs work as soon as the plugin is installed. Logged-in
 sites (bank / internal admin / social) need the user's real browser session:
-have the user run `/tap:setup` once (installs the CLI + registers the Chrome
-bridge + opens the extension page), then click **Add to Chrome** in the store
-and grant the permission. Authentication rides entirely on the browser's
+trigger the **tap-setup** skill once (the user says "set up tap"; it registers
+the Chrome bridge from the engine npx already downloaded and opens the extension
+page), then click **Add to Chrome** in the store and grant the permission. Authentication rides entirely on the browser's
 existing session; Tap never asks for or transmits credentials.

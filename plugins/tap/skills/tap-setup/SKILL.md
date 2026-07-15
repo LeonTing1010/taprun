@@ -13,7 +13,7 @@ description: >-
 license: MIT
 metadata:
   author: LeonTing1010
-  version: '1.0.0'
+  version: '1.1.0'
 ---
 
 # Tap: adaptive login-site setup (spin-style)
@@ -42,8 +42,8 @@ and stop — do nothing more.
 
 | Rung (only if ✗) | Fix | Human consent? |
 |---|---|---|
-| No stable binary | **Show the command and get consent BEFORE running**: `brew install LeonTing1010/tap/taprun` (if brew), or `curl -fsSL https://taprun.dev/install.sh \| sh` | **Yes** (installing a remote script — never run it silently) |
-| NM bridge manifest missing | `tap bridge setup` (idempotent; run once the binary exists) | No |
+| No stable binary | `npx -y @taprun/cli bridge setup` — `bridge setup` self-copies the **running** engine to `~/.tap/bin/tap` (the exact bytes npx already downloaded for the MCP server, **no second download**) and writes the NM manifest in the same step. Only if npx is absent, fall back to a remote install — **show the command and get consent BEFORE running**: `brew install LeonTing1010/tap/taprun` (if brew), or `curl -fsSL https://taprun.dev/install.sh \| sh` | npx path: **No** (nothing new is fetched). brew/curl fallback: **Yes** (remote installer — never run it silently) |
+| NM bridge manifest missing | `tap bridge setup` (idempotent; via npx as above if no stable binary yet) | No |
 | Extension not installed | Open the store page and have the user click **Add to Chrome** and accept the permission prompt: `https://chromewebstore.google.com/detail/tap/llcidejeoobdegbkolbjhfoeckphldce` | **Yes** (the one click = the trust boundary; cannot be automated) |
 | Host socket not live | Confirm Chrome is running and the extension is enabled; if needed, have the user toggle the extension | No |
 

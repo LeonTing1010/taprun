@@ -11,15 +11,16 @@ MCP，Skill 才调得动 Tap。
 
 ## 0. 上架前自检（硬性门槛）
 
-- [ ] **授权方案（已定：保持专有核心）**：Tap 全渠道既定授权为「Proprietary core · MIT extension + community taps」
-      （见 `core/docs/mcp-distribution-copy-2026-07-11.md`，Glama/Awesome-MCP 已按此上架）。
-      MCP 市场硬性要求"代码开源(MIT/Apache)"且通过 `gitUrl` 仓库核验——因此**不能直接拿闭源引擎去上架**。
-      采用**「MIT 连接器 + 专有引擎」形态**：把只做 `spawn npx @taprun/cli mcp stdio` 的 MCP 连接器以 MIT 开源、
-      放进公开仓库，`gitUrl` 指向该连接器仓库；引擎作为专有本地运行时（免费层）成为运行时依赖。
-      `DOC.md` 如实写明：Connector 开源(MIT)、连接的 Tap 引擎为独立专有本地运行时。
-      ⚠️ **必须先修的合规债**：`core/LICENSE` 当前是 **GNU AGPL v3**，与"Proprietary"策略及 npm 的
-      `UNLICENSED` 声明三处打架。保持专有 → 须把该 AGPL 文件替换为真正专有许可（正文待提供），
-      否则审核/用户/竞品一查 `core/LICENSE` 就会看到"开源 copyleft"，与全局"proprietary"自相矛盾。
+- [ ] **授权方案（已确认：AGPL-3.0 开源 + 商业双许可）**：经 `core` git 历史确认（commit `06023cc`，
+      LeonTing1010, 2026-03-29，*“License: MIT → AGPL-3.0 (dual-licensing ready)”*），引擎**本就是开源
+      AGPL-3.0**，作者保留商业许可权——即"开源 + 商业双许可"模式（类 MySQL/Qt），**从未改为专有**。
+      `core/LICENSE` / `README.md` 的 AGPL 已还原，未改动。
+      市场硬性要求"代码开源(MIT/Apache)"——AGPL 是 OSI 认证的开源许可，故**"代码开源"这一条已满足**；
+      但 AGPL 是强 copyleft、非"商业友好 MIT/Apache"，故 `DOC.md` 须如实写明：源码 AGPL-3.0（个人/本地使用免费）、
+      商业用途可获商业许可。
+      ⚠️ **真实的不一致在别处**（非 LICENSE 文件）：(a) npm `@taprun/cli` 声明 `UNLICENSED`，与 AGPL 矛盾；
+      (b) 分发文案写 "Proprietary core"，与 AGPL 矛盾；(c) AGPL 要求源码可得，而 `core/` 实际为私有仓——
+      若源码不公开则 AGPL 未被真正履行。这些才是提交前须厘清的合规债。
 - [ ] **安全性**：MCP server 不读取用户本地非必要数据。Tap 的本地优先设计天然契合（凭据不出本机）；
       但 `op:fetch` 会按 plan 发起网络请求——需在 `DOC.md` 里如实说明，避免审核以"越权访问"打回。
 - [ ] **Transport 类型 = Stdio**：Tap 用 `npx @taprun/cli mcp stdio`，符合 Stdio 要求。✅
@@ -96,16 +97,21 @@ MCP，Skill 才调得动 Tap。
 
 ---
 
-## 5. 已决议事项（提交前必做）
+## 5. 已确认事项与待办（提交前必做）
 
-1. **授权形态：保持专有核心（用户 2026-07-15 确认）**。MCP 市场走「MIT 连接器 + 专有引擎」方案，不把引擎改写开源。
-2. **修正 `core/LICENSE` 的 AGPL 矛盾**：`core/` 现挂 AGPL-3.0，与全局 Proprietary 策略、npm `UNLICENSED` 冲突。
-   保持专有 → 替换为真正专有许可（正文待法务/用户提供），不要留 AGPL。
-3. **`meta.json` 的 `gitUrl` 不能指向不含引擎源码的公开仓**：改为指向新建的 MIT 连接器仓库
-   （连接器仅 `spawn npx @taprun/cli mcp stdio`，不含引擎逻辑），让审核方在 `gitUrl` 看到真正开源(MIT)的源码。
+1. **授权形态：引擎 = AGPL-3.0 开源 + 商业双许可**（git 历史 `06023cc` 确认，2026-07-15 复核）。
+   **不是专有**——先前"保持专有"的判断基于错误前提，已撤回；`core/LICENSE` 与 `README` 的 AGPL 已还原。
+2. **MCP 市场上架形态（修正）**：因引擎本就开源(AGPL)，无需"MIT 连接器"变通。直接：
+   `meta.json` 声明 **AGPL-3.0**，`gitUrl` 指向**真正含引擎源码且公开可得**的仓库，`DOC.md` 注明
+   "开源 AGPL-3.0 + 商业许可可选"。这满足市场"代码开源"硬要求。
+3. **须修的真实不一致（提交前）**：
+   - (a) npm `@taprun/cli` 的 `"license": "UNLICENSED"` → 改为 `AGPL-3.0`（或 `AGPL-3.0 OR commercial`）；
+   - (b) 分发文案 "Proprietary core" → 改为 "AGPL-3.0 (open source; commercial license available)"；
+   - (c) **AGPL 合规前提**：引擎源码须公开可得（开放 `core/` 或镜像到 `gitUrl` 指向的公开仓），否则 AGPL 未履行。
 4. **命令一致性**：分发文案用 `npx -y @taprun/cli mcp start`（`core/docs/mcp-distribution-copy-2026-07-11.md`），
    本清单/草稿曾写 `mcp stdio`，提交前统一为 `mcp start`（或先确认实际子命令）。
-5. **若市场坚持"服务端逻辑本身须开源"而拒连接器方案** → 退为 README 提供 `mcp.json` 片段手动粘贴（非一键，已记 §4）。
+5. **若市场审核以"非 MIT/Apache"为由拒 AGPL** → 退为 README 提供 `mcp.json` 片段手动粘贴（非一键，已记 §4）。
 
 > 决策依据：市场官方上架清单要求"代码开源、商业友好许可证(MIT/Apache)"，且 `meta.json` 无 `license` 字段、
-> 靠 `gitUrl` 仓库核验——故"专有引擎"无法直接过审，必须借"开源连接器"形态落地，且 `DOC.md` 如实披露引擎专有。
+> 靠 `gitUrl` 仓库核验。引擎实为 AGPL-3.0 开源，故"代码开源"硬要求已天然满足；只是 AGPL 非宽松 MIT/Apache，
+> 需在 `DOC.md` 如实说明双许可结构（开源 + 商业可选）。

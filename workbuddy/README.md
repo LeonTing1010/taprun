@@ -45,8 +45,13 @@ WorkBuddy 通过 `~/.workbuddy/mcp.json`（用户级，所有项目复用）或 
 
 ## 3. 分发下一步（尚未执行）
 
-- 将 Tap 作为 **MCP server 条目**发布到 [腾讯云 MCP 市场](https://cloud.tencent.com/developer/mcp)，实现一键安装。
-- 将三个 Skill 发布到 **SkillHub**，让非技术用户直接发现并装上。
+两份发布操作清单，分别覆盖"连引擎"与"装 Skill"两条链路：
+
+- **[MCP 市场发布清单](./MCP_MARKET_PUBLISH_CHECKLIST.md)** —— 将 Tap 作为 MCP server 条目发布到
+  [腾讯云 MCP 市场](https://cloud.tencent.com/developer/mcp)，实现一键连上引擎（含闭源合规等不确定项的确认）。
+- **[SkillHub 发布清单](./SKILLHUB_PUBLISH_CHECKLIST.md)** —— 将三个 Skill 发布到 SkillHub，让非技术用户直接发现并装上。
+
+> 顺序：先 MCP 市场（一键连引擎），后 SkillHub（教 agent 何时用）。详见各清单第 4/5 步的配合说明。
 
 完成这两步，Tap 即借 WorkBuddy 已聚好的消费者买家，直接补上"漏斗卡在极窄技术人群"的分发缺口。
 

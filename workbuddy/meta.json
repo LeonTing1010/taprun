@@ -1,0 +1,10 @@
+{
+  "name": "taprun",
+  "title": "Tap — 本地优先的登录态浏览器自动化",
+  "description": "在你的真实 Chrome 里录制一次浏览器任务，之后以零 token 的确定性重放执行；凭据不出本机，适合反复要做、需登录的网站杂活。",
+  "author": { "name": "LeonTing1010" },
+  "gitUrl": "https://github.com/LeonTing1010/tap",
+  "tags": ["browser-automation", "local-first", "zero-token", "productivity"],
+  "logo": ["REPLACE_WITH_PUBLIC_LOGO_URL"],
+  "env_params": {}
+}

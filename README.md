@@ -1,13 +1,16 @@
 # taprun
 
-**Local-first authenticated browser automation for Claude Code.** Record a
+**Local-first authenticated browser automation for your coding agent.** Record a
 repeated logged-in browser task once; replay it forever in your own Chrome as a
 deterministic program at **zero LLM tokens** — your credentials never leave your
 machine.
 
-This repository is a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins).
-Adding it gives Claude Code the **Tap** MCP server plus the skills that teach the
-agent when and how to use it. Homepage: [taprun.dev](https://taprun.dev).
+This repository is a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins),
+and the plugin format travels: it installs unchanged into **Claude Code** and
+**Tencent CodeBuddy Code** (which is Claude-Code-plugin compatible — MCP server,
+skills, and hooks all verified end-to-end). Adding it gives your agent the
+**Tap** MCP server plus the skills that teach it when and how to use Tap.
+Homepage: [taprun.dev](https://taprun.dev).
 
 ## Why Tap is different
 
@@ -46,13 +49,34 @@ claude plugin marketplace add LeonTing1010/taprun && claude plugin install tap@t
 That's it for **public pages and open APIs** — the MCP server runs over `npx`,
 nothing else to install.
 
+### CodeBuddy Code (腾讯 CodeBuddy)
+
+Same marketplace, same plugin — CodeBuddy reads the `.claude-plugin/` format
+natively. Inside a `codebuddy` session:
+
+```
+/plugin marketplace add LeonTing1010/taprun
+/plugin install tap@taprun
+```
+
+Then **fully restart CodeBuddy** — it wires plugin MCP servers at startup only
+(skills and hooks appear immediately, but `/mcp` stays empty until the restart).
+After restarting, `/mcp` shows `tap ✓ Connected` with the 4 verbs.
+
+Two CodeBuddy-specific notes:
+- Skills surface as slash commands **without** the plugin namespace
+  (`/tap-setup`, `/tap-capture-replay`, `/tap-triggers`).
+- The WebFetch→tap routing hook works unchanged — CodeBuddy's fetch tool
+  answers to the same `WebFetch` matcher.
+
 > **First connection is a one-time download.** The very first time the Tap MCP
 > server starts, `npx` fetches the engine (~50 MB) before it can answer, so the
-> initial connect can take up to a minute on a slow link. Claude Code waits for
-> it rather than failing, and every run after that is instant and fully offline.
-> If the Tap tools still aren't connected, run `/reload-plugins` — the retry is
-> fast because the engine is already cached. On a very slow link you can give the
-> first connect extra headroom by launching with `MCP_TIMEOUT=120000 claude`.
+> initial connect can take up to a minute on a slow link. Claude Code and
+> CodeBuddy both wait for it rather than failing, and every run after that is
+> instant and fully offline. If the Tap tools still aren't connected, run
+> `/reload-plugins` — the retry is fast because the engine is already cached. On
+> a very slow link you can give the first connect extra headroom by launching
+> with `MCP_TIMEOUT=120000 claude`.
 
 ### Logged-in sites — one extra step
 

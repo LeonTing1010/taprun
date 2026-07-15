@@ -11,11 +11,15 @@ MCP，Skill 才调得动 Tap。
 
 ## 0. 上架前自检（硬性门槛）
 
-- [ ] **代码开源 + 商业友好许可证**：Tap 引擎私有（proprietary），但 MCP server 的接入形态是
-      `npx @taprun/cli`——需确认市场是否接受"以 npx 包形式分发、引擎闭源"的提交。
-      ⚠️ 这是**最关键的不确定项**：CloudBase 上架指引默认要求"代码开源（MIT/Apache）"。
-      Tap 的 `@taprun/cli` 走 npm 发布、引擎闭源，与"仓库开源"要求可能冲突。
-      **行动**：先就"闭源引擎 + 开放 npm 包/CLI"的合规性，向市场审核方确认，再决定提交形态。
+- [ ] **授权方案（已定：保持专有核心）**：Tap 全渠道既定授权为「Proprietary core · MIT extension + community taps」
+      （见 `core/docs/mcp-distribution-copy-2026-07-11.md`，Glama/Awesome-MCP 已按此上架）。
+      MCP 市场硬性要求"代码开源(MIT/Apache)"且通过 `gitUrl` 仓库核验——因此**不能直接拿闭源引擎去上架**。
+      采用**「MIT 连接器 + 专有引擎」形态**：把只做 `spawn npx @taprun/cli mcp stdio` 的 MCP 连接器以 MIT 开源、
+      放进公开仓库，`gitUrl` 指向该连接器仓库；引擎作为专有本地运行时（免费层）成为运行时依赖。
+      `DOC.md` 如实写明：Connector 开源(MIT)、连接的 Tap 引擎为独立专有本地运行时。
+      ⚠️ **必须先修的合规债**：`core/LICENSE` 当前是 **GNU AGPL v3**，与"Proprietary"策略及 npm 的
+      `UNLICENSED` 声明三处打架。保持专有 → 须把该 AGPL 文件替换为真正专有许可（正文待提供），
+      否则审核/用户/竞品一查 `core/LICENSE` 就会看到"开源 copyleft"，与全局"proprietary"自相矛盾。
 - [ ] **安全性**：MCP server 不读取用户本地非必要数据。Tap 的本地优先设计天然契合（凭据不出本机）；
       但 `op:fetch` 会按 plan 发起网络请求——需在 `DOC.md` 里如实说明，避免审核以"越权访问"打回。
 - [ ] **Transport 类型 = Stdio**：Tap 用 `npx @taprun/cli mcp stdio`，符合 Stdio 要求。✅
@@ -92,11 +96,16 @@ MCP，Skill 才调得动 Tap。
 
 ---
 
-## 5. 待确认的不确定项（提交前必须厘清）
+## 5. 已决议事项（提交前必做）
 
-1. **闭源引擎能否上架**：市场默认要求"代码开源"。需向审核方确认 `@taprun/cli`（npm 开放、引擎闭源）是否被接受。
-2. **`meta.json` 字段枚举**：`tags` 取值、是否必填 `port`（stdio 应可省）。
-3. **提交表单归属**：表单是"云开发 MCP 市场"通道；确认它与 WorkBuddy 内置 MCP 市场是同一入口（README 里写的"腾讯云 MCP 市场"）。
+1. **授权形态：保持专有核心（用户 2026-07-15 确认）**。MCP 市场走「MIT 连接器 + 专有引擎」方案，不把引擎改写开源。
+2. **修正 `core/LICENSE` 的 AGPL 矛盾**：`core/` 现挂 AGPL-3.0，与全局 Proprietary 策略、npm `UNLICENSED` 冲突。
+   保持专有 → 替换为真正专有许可（正文待法务/用户提供），不要留 AGPL。
+3. **`meta.json` 的 `gitUrl` 不能指向不含引擎源码的公开仓**：改为指向新建的 MIT 连接器仓库
+   （连接器仅 `spawn npx @taprun/cli mcp stdio`，不含引擎逻辑），让审核方在 `gitUrl` 看到真正开源(MIT)的源码。
+4. **命令一致性**：分发文案用 `npx -y @taprun/cli mcp start`（`core/docs/mcp-distribution-copy-2026-07-11.md`），
+   本清单/草稿曾写 `mcp stdio`，提交前统一为 `mcp start`（或先确认实际子命令）。
+5. **若市场坚持"服务端逻辑本身须开源"而拒连接器方案** → 退为 README 提供 `mcp.json` 片段手动粘贴（非一键，已记 §4）。
 
-> 若闭源合规无法走通，备选方案：不进市场，仅在 WorkBuddy 文档/README 里提供 `mcp.json` 片段让用户手动粘贴
-> （仍是零代码、可视化粘贴，只是非"一键"）。
+> 决策依据：市场官方上架清单要求"代码开源、商业友好许可证(MIT/Apache)"，且 `meta.json` 无 `license` 字段、
+> 靠 `gitUrl` 仓库核验——故"专有引擎"无法直接过审，必须借"开源连接器"形态落地，且 `DOC.md` 如实披露引擎专有。
